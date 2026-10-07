@@ -14,8 +14,9 @@ import { soldCount } from '../../lib/sold';
 
 export const prerender = false;
 
-const back = (reason: string, origin: string) =>
-  new Response(null, { status: 303, headers: { Location: `${origin}/?checkout=${reason}#pricing` } });
+// TEMPORARY: `x-debug` says what the site sees (host, token length, never the token) while Polar is being connected.
+const back = (reason: string, origin: string, debug = '') =>
+  new Response(null, { status: 303, headers: { Location: `${origin}/?checkout=${reason}#pricing`, ...(debug ? { 'x-debug': debug } : {}) } });
 
 export const GET: APIRoute = async ({ url, request, clientAddress }) => {
   const origin = import.meta.env.PROD ? site.url : url.origin;
@@ -35,7 +36,7 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
   if (Number.isFinite(expect) && expect > 0 && formatUsd(expect) !== formatUsd(plan.usd)) return back('price-changed', origin);
   if (!polarToken || !plan.productId) {
     console.error('Polar settings missing', polarDiagnostics());
-    return back('unavailable', origin);
+    return back('unavailable', origin, `settings missing ${polarDiagnostics()}`);
   }
 
   // Polar picks the buyer's local currency from the IP address that creates the checkout, so pass theirs on
@@ -64,7 +65,7 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
     const body = (await res.json().catch(() => ({}))) as { url?: string | null };
     if (!res.ok || !body.url) {
       console.error('Polar checkout failed', res.status, polarDiagnostics(), JSON.stringify(body).slice(0, 300));
-      return back('unavailable', origin);
+      return back('unavailable', origin, `polar ${res.status} ${polarDiagnostics()} ${JSON.stringify(body).replace(/[^\x20-\x7e]/g, '').slice(0, 160)}`);
     }
     return new Response(null, { status: 303, headers: { Location: body.url, 'Cache-Control': 'no-store' } });
   } catch (error) {
