@@ -49,7 +49,9 @@ export const POST: APIRoute = async ({ request }) => {
       }
       macs = Number.isInteger(macs) && macs >= 1 && macs <= 10 ? macs : 1;
 
-      const units = launchUnits({ plan });
+      // Free orders (a 100% discount code, a giveaway) never use up a launch slot.
+      const paid = [order.net_amount, order.total_amount, order.amount].find((v) => typeof v === 'number');
+      const units = paid === 0 ? 0 : launchUnits({ plan });
       if (units > 0) {
         // A repeated delivery of the same order must not count twice.
         const orderId = order.id ?? request.headers.get('webhook-id');
