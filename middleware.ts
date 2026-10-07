@@ -10,7 +10,19 @@ import { trackAICrawlerRequest } from '@datafast/ai-crawl';
 import { waitUntil } from '@vercel/functions';
 import { next } from '@vercel/functions/middleware';
 
-export default function middleware(request: Request) {
+export default async function middleware(request: Request) {
+  // Safety net: Polar's webhook address is set to the home page (https://lidshutter.com/) instead of
+  // /api/polar-webhook. Pass those signed messages on to the real webhook handler, unchanged, and return its
+  // answer to Polar. The handler still checks the signature, so nothing else can get through this way.
+  if (request.method === 'POST' && new URL(request.url).pathname === '/' && request.headers.has('webhook-signature')) {
+    const headers = new Headers();
+    for (const name of ['content-type', 'webhook-id', 'webhook-timestamp', 'webhook-signature', 'user-agent']) {
+      const value = request.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    const res = await fetch(new URL('/api/polar-webhook', request.url), { method: 'POST', headers, body: await request.text() });
+    return new Response(await res.text(), { status: res.status });
+  }
   try {
     trackAICrawlerRequest(request, { waitUntil }, { websiteId: 'dfid_s32MgUe709d4iFfVo1B94' });
   } catch {
