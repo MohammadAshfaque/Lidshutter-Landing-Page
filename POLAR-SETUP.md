@@ -13,41 +13,33 @@ Polar's fees are a percentage plus a fixed amount per sale (Starter plan: 5% + 5
 3. In each, copy the **Organization ID** (Settings → General). Put them in the app: `LidShutter/License.swift` → `LicenseConfig`: `organizationID` for the sandbox (Debug builds) and for live (Release builds). `Tools/release.sh` refuses to build until both are filled in.
 4. Note your organization **slug** (the name in your Polar address). The customer portal is `https://polar.sh/<slug>/portal`. Put it in `src/data/site.ts` → `portalUrl`.
 
-## 2. License-key benefits (10 of them)
-Benefits → **New Benefit** → **License Keys**. Make ten, one for each number of Macs:
+## 2. One license-key benefit
+Benefits → **New Benefit** → **License Keys**. Make **one**:
 
 | Setting | Value |
 |---|---|
-| Prefix | `LIDSHUTTER` |
+| Prefix | `LIDSHUTTER-` |
+| Visibility | shown to customers (not Hidden) |
 | Expiration | **None**. An expiry would lock customers out later. |
-| Activation limit | **1** for single-Mac products; **2 … 10** for the packs |
-| Usage limit | none |
-| Customer deactivation | allow customers to deactivate activations in the portal (if there is a switch for it) |
+| Limit activations | on, **1** |
+| Let customers deactivate in Polar | ticked |
+| Limit usage | off |
 
-Name them clearly, for example "LidShutter key, 1 Mac" … "LidShutter key, 10 Macs".
+It allows 1 Mac. When someone buys a Mac pack, our server raises that key's limit to the number of Macs they bought (2 to 10), so you never make a benefit per pack.
 
-## 3. Products (10, all one-time and fixed price)
-Products → **New Product**. Pricing: **One-time**, **Fixed price**, USD. Only add USD; leave "Add Currency", seat and unit pricing alone.
+## 3. One product
+Products → **New Product**. Name it "LidShutter". Pricing: **One-time**, **Fixed price**, USD only (leave "Add Currency", seat and unit pricing alone). Price: **$4.99**. Attach the license-key benefit from step 2. Save, open the product and copy its **Product ID** into `POLAR_PRODUCT_ID`.
 
-| Product | USD price | Benefit | Env var |
-|---|---|---|---|
-| LidShutter, 1 Mac | **$4.99** | key, 1 Mac | `POLAR_PRODUCT_MACS_1` |
-| LidShutter, 2 Macs … 10 Macs | $8.99 … $34.99 (see `src/data/site.ts`) | key, 2 … 10 Macs | `POLAR_PRODUCT_MACS_2` … `_10` |
+**You never create more products and never change a price in Polar.** For every sale the site tells Polar the exact price (the launch prices $1.99, $2.99, $3.99, then $4.99, or the Mac pack price) and how many Macs the key covers, and counts the launch sales through the webhook. The $4.99 on the product is only a fallback. The prices live in `src/data/site.ts`.
 
-Open each product and copy its **Product ID** (a UUID) into the matching env var.
-
-**You don't make a product for each launch price.** The launch prices ($1.99, $2.99, $3.99, then $4.99) all use the 1-Mac product: the site tells Polar the exact price when it starts each checkout, based on how many launch licenses have sold, and counts each sale through the webhook. You never change anything in Polar as the price steps up. The packs only appear once the 20 launch licenses are sold, so you can create those nine products later (before then).
-
-If you change a price in `src/data/site.ts`, change the matching Polar product too, so the two always agree.
-
-### Prices in local currencies (optional)
-Polar lets one product have prices in several currencies. It picks the buyer's currency from where they are, and falls back to your main currency (USD). You choose the exact amount per currency, so you can match what the landing page shows. The page shows a converted, approximate price unless you give a country exact prices in `src/data/regions.ts` (`prices`), so type the same numbers there. You can start with USD only and add currencies later. The checkout already passes the buyer's IP address to Polar so it picks the right currency.
+### Prices in local currencies
+Because the site sets each sale's price in US dollars, buyers are charged in USD and their bank converts it. The landing page still shows an approximate local price. (Fixed local-currency prices would need a separate Polar product per price, which this setup avoids on purpose.)
 
 ### Tax
 Polar is the seller of record: it collects and pays sales tax and VAT. By default Polar shows prices **including** tax in most countries and **excluding** tax in the US, Canada and India. Where the price includes tax, the tax comes out of your $1.99. Look in your Polar organization settings for the tax-inclusive / tax-exclusive choice and decide which you want before launch.
 
 ## 4. Access token and webhook
-- **Token:** Settings → Developers → **New Access Token** (an Organization Access Token) with the scopes `checkouts:write`, `checkouts:read`, `customer_sessions:write` → `POLAR_ACCESS_TOKEN`. The sandbox and live organizations each have their own.
+- **Token:** Settings → Developers → **New Access Token** (an Organization Access Token) with the scopes `checkouts:write`, `checkouts:read`, `customer_sessions:write`, `license_keys:write` → `POLAR_ACCESS_TOKEN`. The sandbox and live organizations each have their own.
 - **Webhook:** Settings → Webhooks → **Add Endpoint**. URL `https://lidshutter.com/api/polar-webhook`, format **Raw**, event **order.paid** only. Set a secret (Polar can generate one) → `POLAR_WEBHOOK_SECRET`.
 
 ## 5. Vercel
@@ -57,6 +49,8 @@ Polar is the seller of record: it collects and pays sales tax and VAT. By defaul
 
 ## 6. Test it (sandbox)
 1. Open the site, press **Buy**, and pay with a Polar test card (`4242 4242 4242 4242`, any future date, any CVC). You should land on `/thanks` and see a key after a few seconds.
+   To try a Mac pack before the launch is over, set `SOLD_OFFSET=20` in Vercel for the test, then remove it again.
+   After a pack purchase, open the key in the Polar sandbox (or the customer portal) and check its activation limit is the number of Macs you bought.
 2. Reload the site: "5 of 5 left at $1.99" should now read "4 of 5 left".
 3. Build the app from Xcode (Debug builds use the sandbox): paste the key → Activate → the app unlocks and the tour starts.
 4. Try the same key on a second Mac: it should say it's already active on all the Macs it covers. On the first Mac use License → Deactivate this Mac, then the second Mac can activate.

@@ -1,13 +1,15 @@
-// Polar tells us about each paid order here. We use it to count launch licenses sold, which moves the
-// launch price up (1.99 → 2.99 → 3.99 → 4.99).
+// Polar tells us about each paid order here. Two jobs:
+//   1. Count launch licenses sold, which moves the launch price up (1.99 → 2.99 → 3.99 → 4.99).
+//   2. For a Mac pack, raise the license key's activation limit to the number of Macs bought (lib/fulfil.ts).
 //
 // Polar signs every webhook, and we check that signature, so only Polar can move the count. Each order is
-// counted once, even if Polar delivers the webhook more than once.
+// counted once, even if Polar delivers the webhook more than once. If anything fails we answer with an error and
+// Polar sends the webhook again later.
 
 import type { APIRoute } from 'astro';
+import { keysForPurchase, readCheckout } from '../../lib/fulfil';
 import { addToNumber, firstTime } from '../../lib/redis';
 import { SOLD_KEY } from '../../lib/sold';
-import { launchProductIds } from '../../lib/polar';
 import { launchUnits, verify } from '../../lib/webhook';
 
 export const prerender = false;
@@ -27,18 +29,41 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (event?.type === 'order.paid') {
-    const units = launchUnits(event.data, launchProductIds);
-    if (units > 0) {
-      try {
-        // A repeated delivery of the same order must not count twice.
-        const orderId = event.data?.id ?? request.headers.get('webhook-id');
-        if (await firstTime(`lidshutter:order:${orderId}`, 30 * 24 * 3600)) {
-          await addToNumber(SOLD_KEY, units);
+    try {
+      const order = event.data ?? {};
+      // The macs/plan we stored when the checkout was made. Read them from the order, or from the checkout if the
+      // order doesn't carry them.
+      let macs = Number(order.metadata?.macs);
+      let plan = typeof order.metadata?.plan === 'string' ? order.metadata.plan : undefined;
+      let createdAt: string | undefined;
+      let customerId: string | undefined = order.customer_id ?? order.customer?.id;
+      if ((!macs || !plan) && order.checkout_id) {
+        const checkout = await readCheckout(order.checkout_id);
+        if (checkout === 'error') throw new Error('Could not read the checkout');
+        if (checkout) {
+          macs = checkout.macs;
+          plan = checkout.plan;
+          createdAt = checkout.createdAt;
+          customerId ??= checkout.customerId;
         }
-      } catch (error) {
-        console.error('Could not record sale', error);
-        return new Response('Try again', { status: 500 }); // Polar retries failed webhooks
       }
+      macs = Number.isInteger(macs) && macs >= 1 && macs <= 10 ? macs : 1;
+
+      const units = launchUnits({ plan });
+      if (units > 0) {
+        // A repeated delivery of the same order must not count twice.
+        const orderId = order.id ?? request.headers.get('webhook-id');
+        if (await firstTime(`lidshutter:order:${orderId}`, 30 * 24 * 3600)) await addToNumber(SOLD_KEY, units);
+      }
+
+      if (macs > 1 && customerId) {
+        const { keys } = await keysForPurchase(customerId, createdAt ?? order.created_at, macs);
+        // Polar may not have made the key yet: ask to be called again.
+        if (keys.length === 0) return new Response('Key not ready', { status: 503 });
+      }
+    } catch (error) {
+      console.error('Could not process order', error);
+      return new Response('Try again', { status: 500 }); // Polar retries failed webhooks
     }
   }
   return new Response('ok', { status: 202 });

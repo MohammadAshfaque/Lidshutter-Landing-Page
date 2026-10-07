@@ -35,13 +35,7 @@ export function verify(secret: string, headers: Headers, rawBody: string, nowSec
   });
 }
 
-/** How many launch licenses an `order.paid` event contains (one checkout buys one product). */
-export function launchUnits(data: any, launchProductIds: string[]): number {
-  const ids = new Set<string>();
-  if (typeof data?.product_id === 'string') ids.add(data.product_id);
-  if (typeof data?.product?.id === 'string') ids.add(data.product.id);
-  for (const item of Array.isArray(data?.items) ? data.items : []) {
-    if (typeof item?.product_id === 'string') ids.add(item.product_id);
-  }
-  return [...ids].some((id) => launchProductIds.includes(id)) ? 1 : 0;
+/** Launch licenses an order is worth: our checkout marks launch sales in the metadata it sets (buyers can't change it). */
+export function launchUnits(metadata: any): number {
+  return metadata?.plan === 'launch' ? 1 : 0;
 }
