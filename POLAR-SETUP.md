@@ -26,21 +26,19 @@ Benefits → **New Benefit** → **License Keys**. Make ten, one for each number
 
 Name them clearly, for example "LidShutter key, 1 Mac" … "LidShutter key, 10 Macs".
 
-## 3. Products (14, all one-time and fixed price)
-Products → **New Product**. Pricing: **One-time**, **Fixed price**, USD.
+## 3. Products (10, all one-time and fixed price)
+Products → **New Product**. Pricing: **One-time**, **Fixed price**, USD. Only add USD; leave "Add Currency", seat and unit pricing alone.
 
-| Product | Price | Benefit | Env var |
+| Product | USD price | Benefit | Env var |
 |---|---|---|---|
-| LidShutter Launch 1 | $1.99 | key, 1 Mac | `POLAR_PRODUCT_LAUNCH_1` |
-| LidShutter Launch 2 | $2.99 | key, 1 Mac | `POLAR_PRODUCT_LAUNCH_2` |
-| LidShutter Launch 3 | $3.99 | key, 1 Mac | `POLAR_PRODUCT_LAUNCH_3` |
-| LidShutter Launch 4 | $4.99 | key, 1 Mac | `POLAR_PRODUCT_LAUNCH_4` |
-| LidShutter, 1 Mac | $4.99 | key, 1 Mac | `POLAR_PRODUCT_MACS_1` |
+| LidShutter, 1 Mac | **$4.99** | key, 1 Mac | `POLAR_PRODUCT_MACS_1` |
 | LidShutter, 2 Macs … 10 Macs | $8.99 … $34.99 (see `src/data/site.ts`) | key, 2 … 10 Macs | `POLAR_PRODUCT_MACS_2` … `_10` |
 
 Open each product and copy its **Product ID** (a UUID) into the matching env var.
 
-If you change a price in `src/data/site.ts`, change the matching Polar product too. Checkout refuses to charge a price the visitor didn't see.
+**You don't make a product for each launch price.** The launch prices ($1.99, $2.99, $3.99, then $4.99) all use the 1-Mac product: the site tells Polar the exact price when it starts each checkout, based on how many launch licenses have sold, and counts each sale through the webhook. You never change anything in Polar as the price steps up. The packs only appear once the 20 launch licenses are sold, so you can create those nine products later (before then).
+
+If you change a price in `src/data/site.ts`, change the matching Polar product too, so the two always agree.
 
 ### Prices in local currencies (optional)
 Polar lets one product have prices in several currencies. It picks the buyer's currency from where they are, and falls back to your main currency (USD). You choose the exact amount per currency, so you can match what the landing page shows. The page shows a converted, approximate price unless you give a country exact prices in `src/data/regions.ts` (`prices`), so type the same numbers there. You can start with USD only and add currencies later. The checkout already passes the buyer's IP address to Polar so it picks the right currency.

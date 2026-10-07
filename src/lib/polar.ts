@@ -11,13 +11,11 @@ export const polarBase = process.env.POLAR_API_BASE ?? (live ? 'https://api.pola
 /** An Organization Access Token (Polar → Settings → Developers). */
 export const polarToken = process.env.POLAR_ACCESS_TOKEN;
 
-/** Launch products: one per price step, 1 Mac each. POLAR_PRODUCT_LAUNCH_1 … _4. */
-const launchProducts = pricing.tiers.map((_, i) => process.env[`POLAR_PRODUCT_LAUNCH_${i + 1}`]);
-
-/** Regular products by number of Macs: POLAR_PRODUCT_MACS_1 … _10. */
+/** One product per number of Macs: POLAR_PRODUCT_MACS_1 … _10. The launch prices ($1.99 … $4.99) all use the 1-Mac product. */
 const macProducts = (n: number) => process.env[`POLAR_PRODUCT_MACS_${n}`];
 
-export const launchProductIds = launchProducts.filter((id): id is string => Boolean(id));
+/** Orders of these products count toward the launch slots (before the launch ends, every 1-Mac sale is a launch sale). */
+export const launchProductIds = [macProducts(1)].filter((id): id is string => Boolean(id));
 
 export interface Plan {
   macs: number;
@@ -32,7 +30,7 @@ export function planFor(macs: number, sold: number): Plan | null {
   if (macs === 1) {
     return tier.launchOver
       ? { macs, usd: pricing.tiers[pricing.tiers.length - 1], productId: macProducts(1), kind: 'regular' }
-      : { macs, usd: tier.usd, productId: launchProducts[tier.index], kind: 'launch' };
+      : { macs, usd: tier.usd, productId: macProducts(1), kind: 'launch' };
   }
   const pack = pricing.packs.find((p) => p.macs === macs);
   if (!pack) return null;

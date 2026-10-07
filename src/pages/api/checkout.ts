@@ -49,6 +49,8 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
       method: 'POST',
       body: JSON.stringify({
         products: [plan.productId],
+        // The price is set here, from the real sold count, so one product serves every launch step.
+        prices: { [plan.productId]: [{ amount_type: 'fixed', price_currency: 'usd', price_amount: Math.round(plan.usd * 100) }] },
         // Polar fills in {CHECKOUT_ID}; /thanks uses it to look up and show the license key.
         success_url: `${origin}/thanks?checkout_id={CHECKOUT_ID}`,
         return_url: `${origin}/#pricing`,
