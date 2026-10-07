@@ -16,7 +16,8 @@ export interface PricingState {
 }
 
 const params = new URLSearchParams(location.search);
-const locale = navigator.language || 'en-US';
+// Prices are always US dollars, written the US way.
+const locale = 'en-US';
 
 export const state: PricingState = compute(null, pricing.sold);
 
