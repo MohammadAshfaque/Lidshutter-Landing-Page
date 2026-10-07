@@ -1,12 +1,13 @@
 // Which currency each country sees on the page, and roughly how many of it equal one US dollar.
-// The rates are approximate and only for DISPLAY: Dodo Payments converts and charges at
-// checkout, so the real amount can differ a little. Update the rates now and then.
+// The rates are approximate and only for DISPLAY: Polar charges what you set on each product
+// (or converts your base price if you didn't add a price for that
+// currency), so the real amount can differ a little. Update the rates now and then.
 //
 // Optional per-country fields:
 //   prices: exact local prices, keyed by the USD price, when you want a specific number. Example:
 //           IN: { currency: 'INR', rate: 88, prices: { '1.99': 149, '4.99': 399 } }
 //   ppp:    a purchasing-power discount (0.6 = 40% off) applied to the converted price.
-//           Only use this if Dodo charges the same discounted amount for that country,
+//           Only use this if Polar charges the same discounted amount for that country,
 //           otherwise the page would show a lower price than the checkout charges.
 
 export interface Region {

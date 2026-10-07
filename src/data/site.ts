@@ -2,13 +2,13 @@
 
 // ---------------------------------------------------------------------------
 // Pricing. All prices are in US dollars; visitors see them converted to their own
-// currency (see regions.ts). Dodo Payments does the actual charging.
+// currency (see regions.ts). Polar does the actual charging.
 // ---------------------------------------------------------------------------
 
 export const pricing = {
   // LAUNCH PRICING (one Mac): each price has a few slots. When they're all taken, the next
   // price applies, up to the last one. The count of sold slots comes from /api/sold (the
-  // Dodo webhook keeps it); `sold` below is only the fallback until that answers.
+  // Polar webhook keeps it); `sold` below is only the fallback until that answers.
   tiers: [1.99, 2.99, 3.99, 4.99],
   slotsPerTier: 5,
   sold: 0,
@@ -64,5 +64,8 @@ export const site = {
   // The newest notarized DMG. The release script (Tools/release.sh in the app project) puts it here for you.
   downloadUrl: '/LidShutter.dmg',
   supportEmail: 'support@lidshutter.com',
+  // Where buyers sign in to see their license key again. Polar → Settings shows your organization slug:
+  // the address is https://polar.sh/<your-slug>/portal
+  portalUrl: 'https://polar.sh/lidshutter/portal',
   requirements: 'macOS 13 Ventura or later',
 };

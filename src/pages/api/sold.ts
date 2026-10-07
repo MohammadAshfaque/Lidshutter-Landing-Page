@@ -1,5 +1,5 @@
 // How many launch licenses have sold, so the page shows the right price and slots left.
-// The Dodo webhook (dodo-webhook.ts) keeps the count; SOLD_OFFSET adds any you sold another way.
+// The Polar webhook (polar-webhook.ts) keeps the count; SOLD_OFFSET adds any you sold another way.
 
 import type { APIRoute } from 'astro';
 import { soldCount } from '../../lib/sold';

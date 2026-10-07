@@ -14,7 +14,7 @@ Then open http://localhost:4321.
 ## Before launch
 
 - Edit `src/data/site.ts`: prices, launch slots, `downloadUrl` (your notarized DMG) and `supportEmail`.
-- Follow `DODO-SETUP.md` to set up payments and license keys, and copy `.env.example` for the environment variables.
+- Follow `POLAR-SETUP.md` to set up payments and license keys, and copy `.env.example` for the environment variables.
 
 ## Where things live
 
@@ -28,7 +28,7 @@ Then open http://localhost:4321.
 | `src/data/sounds.ts` | Sound names, subtitles and groups (mirrors the app) |
 | `src/styles/global.css` | Design tokens taken from `Theme.swift` |
 | `src/pages/privacy.astro`, `support.astro`, `thanks.astro` | Privacy policy, feedback form, and the page buyers land on after paying |
-| `src/pages/api/` | Checkout, the Dodo sales webhook, sold count, country, feedback |
+| `src/pages/api/` | Checkout, the Polar sales webhook, sold count, country, feedback |
 
 If you add or change a sound in the app, update `synth.ts` and `sounds.ts` to match.
 

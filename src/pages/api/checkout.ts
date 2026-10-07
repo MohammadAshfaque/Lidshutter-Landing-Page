@@ -1,4 +1,4 @@
-// Starts a Dodo Payments checkout for the price the visitor is looking at.
+// Starts a Polar checkout for the price the visitor is looking at.
 //
 //   /api/checkout?macs=1&expect=1.99
 //
@@ -9,7 +9,7 @@
 
 import type { APIRoute } from 'astro';
 import { site, formatUsd } from '../../data/site';
-import { dodoBase, dodoKey, planFor } from '../../lib/dodo';
+import { planFor, polarFetch, polarToken } from '../../lib/polar';
 import { soldCount } from '../../lib/sold';
 
 export const prerender = false;
@@ -17,7 +17,7 @@ export const prerender = false;
 const back = (reason: string, origin: string) =>
   new Response(null, { status: 303, headers: { Location: `${origin}/?checkout=${reason}#pricing` } });
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
   const origin = import.meta.env.PROD ? site.url : url.origin;
   const macs = Number(url.searchParams.get('macs') ?? 1);
   const expect = Number(url.searchParams.get('expect'));
@@ -33,27 +33,37 @@ export const GET: APIRoute = async ({ url }) => {
   const plan = planFor(macs, sold);
   if (!plan) return back('invalid', origin);
   if (Number.isFinite(expect) && expect > 0 && formatUsd(expect) !== formatUsd(plan.usd)) return back('price-changed', origin);
-  if (!dodoKey || !plan.productId) return back('unavailable', origin);
+  if (!polarToken || !plan.productId) return back('unavailable', origin);
+
+  // Polar picks the buyer's local currency from the IP address that creates the checkout, so pass theirs on
+  // (otherwise it would see this server's address).
+  let ip: string | undefined;
+  try {
+    ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || clientAddress;
+  } catch {
+    ip = undefined;
+  }
 
   try {
-    const res = await fetch(`${dodoBase}/checkouts`, {
+    const res = await polarFetch('/v1/checkouts/', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${dodoKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        product_cart: [{ product_id: plan.productId, quantity: 1 }],
-        // Dodo adds ?license_key=… to this address after payment; /thanks shows it.
-        return_url: `${origin}/thanks`,
+        products: [plan.productId],
+        // Polar fills in {CHECKOUT_ID}; /thanks uses it to look up and show the license key.
+        success_url: `${origin}/thanks?checkout_id={CHECKOUT_ID}`,
+        return_url: `${origin}/#pricing`,
+        ...(ip ? { customer_ip_address: ip } : {}),
         metadata: { macs: String(plan.macs), plan: plan.kind, price_usd: plan.usd.toFixed(2) },
       }),
     });
-    const body = (await res.json().catch(() => ({}))) as { checkout_url?: string | null };
-    if (!res.ok || !body.checkout_url) {
-      console.error('Dodo checkout failed', res.status, JSON.stringify(body).slice(0, 300));
+    const body = (await res.json().catch(() => ({}))) as { url?: string | null };
+    if (!res.ok || !body.url) {
+      console.error('Polar checkout failed', res.status, JSON.stringify(body).slice(0, 300));
       return back('unavailable', origin);
     }
-    return new Response(null, { status: 303, headers: { Location: body.checkout_url, 'Cache-Control': 'no-store' } });
+    return new Response(null, { status: 303, headers: { Location: body.url, 'Cache-Control': 'no-store' } });
   } catch (error) {
-    console.error('Dodo checkout error', error);
+    console.error('Polar checkout error', error);
     return back('unavailable', origin);
   }
 };

@@ -1,6 +1,7 @@
 ---
-// Where Dodo Payments sends people after they pay. It adds ?license_key=… to the address,
-// and this page shows that key with a copy button and the three steps to switch LidShutter on.
+// Where Polar sends people after they pay (with ?checkout_id=… in the address). This page asks our server for
+// that purchase's license key (/api/license-key) and shows it with a copy button and the steps to switch
+// LidShutter on. If the key can't be fetched, it points to the customer portal, where the key always lives.
 import Base from '../layouts/Base.astro';
 import Prose from '../components/Prose.astro';
 import { site } from '../data/site';
@@ -11,12 +12,19 @@ import { site } from '../data/site';
     <div class="key-card" data-key-card hidden>
       <p class="key-label" data-key-label>Your license key</p>
       <ul class="keys" data-keys></ul>
-      <p class="key-note">We’ve also emailed it to you. Keep it somewhere safe.</p>
+      <p class="key-note">
+        Keep it somewhere safe. You can always find it again in your{' '}
+        <a data-portal href={site.portalUrl} rel="noopener">customer portal</a> (sign in with the email you used to buy).
+      </p>
     </div>
 
+    <p class="callout" data-waiting>Getting your key ready…</p>
+
     <p class="callout" data-no-key hidden>
-      Your key is on its way by email, usually within a minute. Can’t find it? Check spam, or write to
-      <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> and we’ll send it again.
+      We couldn’t show your key here, but it’s safe. Open your{' '}
+      <a data-portal href={site.portalUrl} rel="noopener">customer portal</a> and sign in with the email you used to buy,
+      and it’s there. Can’t find it? Write to{' '}
+      <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> and we’ll sort it out.
     </p>
 
     <h2>Switch LidShutter on</h2>
@@ -40,17 +48,16 @@ import { site } from '../data/site';
 
 <script>
   const params = new URLSearchParams(location.search);
-  // Dodo separates several keys (one per Mac in some setups) with commas.
-  const keys = (params.get('license_key') ?? '').split(',').map((k) => k.trim()).filter(Boolean);
+  const checkout = params.get('checkout_id') ?? '';
 
   const card = document.querySelector<HTMLElement>('[data-key-card]')!;
   const list = document.querySelector<HTMLUListElement>('[data-keys]')!;
   const noKey = document.querySelector<HTMLElement>('[data-no-key]')!;
+  const waiting = document.querySelector<HTMLElement>('[data-waiting]')!;
   const label = document.querySelector<HTMLElement>('[data-key-label]')!;
 
-  if (keys.length === 0) {
-    noKey.hidden = false;
-  } else {
+  function showKeys(keys: string[]) {
+    waiting.hidden = true;
     card.hidden = false;
     label.textContent = keys.length > 1 ? 'Your license keys' : 'Your license key';
     for (const key of keys) {
@@ -77,8 +84,40 @@ import { site } from '../data/site';
       item.append(code, button);
       list.append(item);
     }
-    // Don't leave the key sitting in the address bar and browser history.
+  }
+
+  function giveUp(portalUrl?: string) {
+    waiting.hidden = true;
+    noKey.hidden = false;
+    if (portalUrl) document.querySelectorAll<HTMLAnchorElement>('[data-portal]').forEach((a) => (a.href = portalUrl));
+  }
+
+  // Polar makes the key a moment after the payment, so ask a few times.
+  async function load() {
+    for (let attempt = 0; attempt < 15; attempt++) {
+      try {
+        const res = await fetch(`/api/license-key?checkout=${encodeURIComponent(checkout)}`, { cache: 'no-store' });
+        const data = (await res.json()) as { status: string; keys?: string[]; portalUrl?: string };
+        if (data.status === 'ready' && data.keys?.length) {
+          if (data.portalUrl) document.querySelectorAll<HTMLAnchorElement>('[data-portal]').forEach((a) => (a.href = data.portalUrl!));
+          showKeys(data.keys);
+          return;
+        }
+        if (data.status !== 'pending') return giveUp(data.portalUrl);
+      } catch {
+        return giveUp();
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+    }
+    giveUp();
+  }
+
+  if (checkout) {
+    load();
+    // Don't leave the checkout address sitting in the address bar and browser history.
     history.replaceState(null, '', location.pathname);
+  } else {
+    giveUp();
   }
 </script>
 
