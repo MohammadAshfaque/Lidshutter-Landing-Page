@@ -2,9 +2,26 @@
 import Base from '../../layouts/Base.astro';
 import Prose from '../../components/Prose.astro';
 import { totalSoundCount } from '../../data/sounds';
+import { article, breadcrumbs, organization } from '../../lib/seo';
+
+const headline = 'How every LidShutter sound is made in code';
+const summary = 'No recordings, no audio files: how LidShutter builds its sounds from scratch.';
 ---
 
-<Base title="How every LidShutter sound is made in code" description="No recordings, no audio files: how LidShutter builds its sounds from scratch." home={false}>
+<Base
+  title={headline}
+  description={summary}
+  home={false}
+  schema={[
+    organization,
+    article(headline, summary, '/blog/sounds-made-in-code'),
+    breadcrumbs([
+      { name: 'LidShutter', path: '/' },
+      { name: 'Blog', path: '/blog' },
+      { name: headline, path: '/blog/sounds-made-in-code' },
+    ]),
+  ]}
+>
   <Prose eyebrow="Blog" title="How every LidShutter sound is made in code">
     <p>
       LidShutter has {totalSoundCount} sounds, and none of them is a recording. There are no audio files in the app at all.

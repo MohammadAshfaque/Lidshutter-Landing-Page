@@ -7,9 +7,10 @@ import Features from '../components/Features.astro';
 import Privacy from '../components/Privacy.astro';
 import FAQ from '../components/FAQ.astro';
 import Pricing from '../components/Pricing.astro';
+import { faqPage, organization, softwareApplication, website } from '../lib/seo';
 ---
 
-<Base>
+<Base schema={[organization, website, softwareApplication, faqPage]}>
   <Hero />
   <DiceRoll />
   <HowItWorks />

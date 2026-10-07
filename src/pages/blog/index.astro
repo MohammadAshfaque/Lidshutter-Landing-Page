@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { breadcrumbs, organization } from '../../lib/seo';
 import Prose from '../../components/Prose.astro';
 
 const posts = [
@@ -11,7 +12,7 @@ const posts = [
 ];
 ---
 
-<Base title="Blog" description="Notes from the LidShutter shop." home={false}>
+<Base title="Blog" description="Notes from the LidShutter shop." home={false} schema={[organization, breadcrumbs([{ name: 'LidShutter', path: '/' }, { name: 'Blog', path: '/blog' }])]}>
   <Prose eyebrow="Blog" title="Notes from the shop">
     <div class="posts">
       {

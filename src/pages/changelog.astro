@@ -1,10 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
+import { breadcrumbs, organization } from '../lib/seo';
 import Prose from '../components/Prose.astro';
 import { totalSoundCount } from '../data/sounds';
 ---
 
-<Base title="Changelog" description="What's new in LidShutter, version by version." home={false}>
+<Base title="Changelog" description="What's new in LidShutter, version by version." home={false} schema={[organization, breadcrumbs([{ name: 'LidShutter', path: '/' }, { name: 'Changelog', path: '/changelog' }])]}>
   <Prose eyebrow="Changelog" title="What’s new">
     <div class="release">
       <div class="release-head">

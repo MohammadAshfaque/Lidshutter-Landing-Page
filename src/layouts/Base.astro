@@ -4,15 +4,18 @@ import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../data/site';
+import { jsonLd, ogImage } from '../lib/seo';
 
 interface Props {
   title?: string;
   description?: string;
   home?: boolean;
   noindex?: boolean;
+  /** Structured data (JSON-LD) for this page. */
+  schema?: object[];
 }
 
-const { title, description = site.description, home = true, noindex = false } = Astro.props;
+const { title, description = site.description, home = true, noindex = false, schema = [] } = Astro.props;
 const fullTitle = title ? `${title} · LidShutter` : `LidShutter — ${site.tagline}`;
 const canonical = new URL(Astro.url.pathname, site.url).href;
 ---
@@ -25,7 +28,17 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+      )
+    }
+    <meta name="author" content="LidShutter" />
+    <meta name="application-name" content="LidShutter" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LidShutter in plain text, for AI assistants" />
     <meta name="theme-color" content="#ffffff" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -35,8 +48,16 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL('/icons/app-icon-512.png', site.url).href} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="LidShutter: a Mac menu bar app that plays a shop shutter when you open your MacBook lid" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    {schema.map((item) => <script type="application/ld+json" set:html={jsonLd(item)} />)}
 
     {import.meta.env.PROD && (
       <>

@@ -1,0 +1,75 @@
+# LidShutter wants to be found, by search engines and by AI assistants, so every crawler is welcome on the pages.
+# Only the checkout API and the post-purchase page (which shows a license key) are off limits.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+# AI assistants and AI search (they answer questions like "what app plays a sound when I open my MacBook?")
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Claude-User
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Applebot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /thanks
+
+Sitemap: https://lidshutter.com/sitemap.xml
