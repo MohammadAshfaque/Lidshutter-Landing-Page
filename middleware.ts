@@ -8,14 +8,9 @@
 
 import { trackAICrawlerRequest } from '@datafast/ai-crawl';
 import { waitUntil } from '@vercel/functions';
-import { next, rewrite } from '@vercel/functions/middleware';
+import { next } from '@vercel/functions/middleware';
 
 export default function middleware(request: Request) {
-  // A safety net: if the Polar webhook address is saved without its path (just https://lidshutter.com/), the signed
-  // message is handed to the webhook handler instead of failing with a 405. The handler still checks the signature.
-  if (request.method === 'POST' && new URL(request.url).pathname === '/' && request.headers.has('webhook-signature')) {
-    return rewrite(new URL('/api/polar-webhook', request.url));
-  }
   try {
     trackAICrawlerRequest(request, { waitUntil }, { websiteId: 'dfid_s32MgUe709d4iFfVo1B94' });
   } catch {
