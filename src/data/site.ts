@@ -1,8 +1,7 @@
 // Everything you might want to change before launch lives here.
 
 // ---------------------------------------------------------------------------
-// Pricing. All prices are in US dollars; visitors see them converted to their own
-// currency (see regions.ts). Polar does the actual charging.
+// Pricing. All prices are in US dollars, on the page and at checkout. Polar does the charging.
 // ---------------------------------------------------------------------------
 
 export const pricing = {

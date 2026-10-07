@@ -59,7 +59,7 @@ Launch pricing (one Mac): ${pricing.tiers.map((t, i) => `${formatUsd(t)} for lau
 
 Mac packs (one key, several Macs): ${pricing.packs.map((p) => `${p.macs} Macs for ${formatUsd(p.usd)} (${per(p.usd, p.macs)} per Mac)`).join('; ')}.
 
-Prices are in US dollars and charged once. Visitors outside the US may see an approximate local price on the website; the charge is made in US dollars.
+Prices are in US dollars and charged once.
 
 ## Links
 

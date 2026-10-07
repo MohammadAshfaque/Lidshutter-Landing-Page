@@ -1,5 +1,5 @@
-// Makes the pricing section live: finds the visitor's country (prices in their currency),
-// asks how many launch licenses have sold (the right price and slots left), and fills it all in.
+// Makes the pricing section live: asks how many launch licenses have sold (the right price and
+// slots left) and fills it all in. Prices are always shown in US dollars.
 // The page works without this: it starts with the dollar prices from site.ts and updates if
 // the answers arrive.
 
@@ -126,13 +126,8 @@ async function json<T>(url: string, tries = 3): Promise<T | null> {
 async function start() {
   render();
   showCheckoutMessage();
-  const override = params.get('country');
-  const [geo, sold] = await Promise.all([
-    json<{ country: string | null }>(`/api/geo${override ? `?country=${encodeURIComponent(override)}` : ''}`),
-    json<{ sold: number | null }>('/api/sold'),
-  ]);
-  const next = compute(geo?.country ?? null, typeof sold?.sold === 'number' ? sold.sold : pricing.sold);
-  Object.assign(state, next);
+  const sold = await json<{ sold: number | null }>('/api/sold');
+  Object.assign(state, compute(null, typeof sold?.sold === 'number' ? sold.sold : pricing.sold));
   render();
 }
 
