@@ -9,7 +9,7 @@
 
 import type { APIRoute } from 'astro';
 import { site, formatUsd } from '../../data/site';
-import { planFor, polarFetch, polarToken } from '../../lib/polar';
+import { planFor, polarDiagnostics, polarFetch, polarToken } from '../../lib/polar';
 import { soldCount } from '../../lib/sold';
 
 export const prerender = false;
@@ -33,7 +33,10 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
   const plan = planFor(macs, sold);
   if (!plan) return back('invalid', origin);
   if (Number.isFinite(expect) && expect > 0 && formatUsd(expect) !== formatUsd(plan.usd)) return back('price-changed', origin);
-  if (!polarToken || !plan.productId) return back('unavailable', origin);
+  if (!polarToken || !plan.productId) {
+    console.error('Polar settings missing', polarDiagnostics());
+    return back('unavailable', origin);
+  }
 
   // Polar picks the buyer's local currency from the IP address that creates the checkout, so pass theirs on
   // (otherwise it would see this server's address).
@@ -60,7 +63,7 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
     });
     const body = (await res.json().catch(() => ({}))) as { url?: string | null };
     if (!res.ok || !body.url) {
-      console.error('Polar checkout failed', res.status, JSON.stringify(body).slice(0, 300));
+      console.error('Polar checkout failed', res.status, polarDiagnostics(), JSON.stringify(body).slice(0, 300));
       return back('unavailable', origin);
     }
     return new Response(null, { status: 303, headers: { Location: body.url, 'Cache-Control': 'no-store' } });

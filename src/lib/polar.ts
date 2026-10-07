@@ -3,19 +3,26 @@
 
 import { pricing, tierFor } from '../data/site';
 
-const live = process.env.POLAR_ENV?.trim().toLowerCase() === 'live';
+/** Environment values with stray spaces or quotation marks around them cleaned off. */
+const clean = (value: string | undefined) => value?.trim().replace(/^["']+|["']+$/g, '').trim() || undefined;
+
+const live = clean(process.env.POLAR_ENV)?.toLowerCase() === 'live';
 
 /** Polar's sandbox until you set POLAR_ENV=live. */
 // (POLAR_API_BASE only exists so the checks can run against a stand-in server.)
 export const polarBase = process.env.POLAR_API_BASE ?? (live ? 'https://api.polar.sh' : 'https://sandbox-api.polar.sh');
 /** An Organization Access Token (Polar → Settings → Developers). */
-export const polarToken = process.env.POLAR_ACCESS_TOKEN?.trim() || undefined;
+export const polarToken = clean(process.env.POLAR_ACCESS_TOKEN);
+
+/** What the site is using, for the logs only (never the token itself). */
+export const polarDiagnostics = () =>
+  `host=${new URL(polarBase).host} tokenLength=${polarToken?.length ?? 0} tokenStart=${polarToken?.slice(0, 10) ?? 'none'} productSet=${Boolean(productId)}`;
 
 /**
  * The ONE product everything is sold through (POLAR_PRODUCT_ID). Its license-key benefit allows 1 Mac; the price
  * and, for Mac packs, the number of Macs are set by this site for each sale (see api/checkout.ts and lib/fulfil.ts).
  */
-export const productId = process.env.POLAR_PRODUCT_ID?.trim() || undefined;
+export const productId = clean(process.env.POLAR_PRODUCT_ID);
 
 export interface Plan {
   macs: number;
