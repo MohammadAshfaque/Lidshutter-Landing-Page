@@ -37,7 +37,7 @@ export const faqs = [
   },
   {
     q: 'Does it collect any data?',
-    a: 'Nothing about you or how you use it. The app has no account and no analytics (our website does use Google Analytics and DataFast to count visits). Your opening stats stay on your Mac. When you activate, your license key and your Mac’s model go to our payment provider. When it looks for updates, it asks lidshutter.com for the newest version number. That’s all.',
+    a: 'Nothing about you or how you use it. The app has no account and no analytics (our website does use Google Analytics, DataFast and Vercel Web Analytics to count visits). Your opening stats stay on your Mac. When you activate, your license key and your Mac’s model go to our payment provider. When it looks for updates, it asks lidshutter.com for the newest version number. That’s all.',
   },
   {
     q: 'How does the license work?',

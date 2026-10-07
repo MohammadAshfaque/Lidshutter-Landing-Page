@@ -5,6 +5,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../data/site';
 import { jsonLd, ogImage } from '../lib/seo';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
   title?: string;
@@ -76,6 +77,7 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
         <script is:inline defer data-website-id="dfid_s32MgUe709d4iFfVo1B94" data-domain="lidshutter.com" src="https://datafa.st/js/script.js"></script>
       </>
     )}
+    <Analytics />
   </head>
   <body>
     <a href="#main" class="skip">Skip to content</a>
