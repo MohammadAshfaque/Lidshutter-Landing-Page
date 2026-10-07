@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { breadcrumbs, organization } from '../lib/seo';
+import { site } from '../data/site';
+---
+
+<Base
+  title="Refund Policy"
+  description="LidShutter has a 7-day refund policy: ask within 7 days of buying and get your money back. Here is how it works."
+  home={false}
+  schema={[organization, breadcrumbs([{ name: 'LidShutter', path: '/' }, { name: 'Refund Policy', path: '/refund' }])]}
+>
+  <Prose eyebrow="Refunds" title="Refund Policy" updated="October 7, 2026">
+    <p class="callout"><strong>The short version:</strong> you have 7 days from the day you buy LidShutter to ask for a refund. We refund the full amount you paid.</p>
+
+    <h2>How to ask</h2>
+    <p>
+      Email <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> within 7 days of your purchase. Write from the
+      email address you bought with, or tell us that address, so we can find your order. You don’t need to explain why.
+    </p>
+
+    <h2>What happens next</h2>
+    <ul>
+      <li>We refund the full amount you paid, to the card or payment method you used.</li>
+      <li>Payments are processed by Polar, who act as the seller. Your bank may take a few business days to show the refund.</li>
+      <li>The refund ends your license. The key stops working: LidShutter checks keys with the license service, so a refunded key locks within about a week of your Mac being online.</li>
+      <li>If you bought a pack for several Macs, the refund covers the whole pack and all of its Macs.</li>
+    </ul>
+
+    <h2>After 7 days</h2>
+    <p>
+      After 7 days we can’t promise a refund, but if something is wrong, email us anyway and we will do our best to put it
+      right.
+    </p>
+
+    <h2>Before you buy</h2>
+    <p>
+      LidShutter has no free trial, so you can’t try it first. You can hear every sound on the
+      <a href="/#roll">homepage</a>, and the 7-day refund is there so that buying is safe.
+    </p>
+  </Prose>
+</Base>

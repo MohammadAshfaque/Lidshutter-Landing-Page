@@ -12,6 +12,8 @@ const pages = [
   { path: '/blog/sounds-made-in-code', changefreq: 'yearly', priority: '0.6' },
   { path: '/support', changefreq: 'yearly', priority: '0.4' },
   { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
+  { path: '/terms', changefreq: 'yearly', priority: '0.3' },
+  { path: '/refund', changefreq: 'yearly', priority: '0.4' },
 ];
 
 export const GET: APIRoute = () => {

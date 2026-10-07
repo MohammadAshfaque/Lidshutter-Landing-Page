@@ -44,6 +44,10 @@ export const faqs = [
     a: 'You pay once and your license key appears on the page right after you pay, with the Mac app download. You can always find the key again in your customer portal. Open LidShutter, go to License in the dashboard, paste the key, and press Activate. No subscription, and updates are free.',
   },
   {
+    q: 'Can I get a refund?',
+    a: 'Yes. You have 7 days from the day you buy to ask for a full refund: email support@lidshutter.com. A refunded key stops working.',
+  },
+  {
     q: 'Can I use it on more than one Mac?',
     a: 'One key activates one Mac. If you have several, choose a multi-Mac pack (2 to 10 Macs): it’s one key that activates on all of them, and each Mac costs less.',
   },

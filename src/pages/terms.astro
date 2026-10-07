@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { breadcrumbs, organization } from '../lib/seo';
+import { site } from '../data/site';
+---
+
+<Base
+  title="Terms of Use"
+  description="The terms for using LidShutter and its website: your license, what you can and cannot do with it, updates and refunds."
+  home={false}
+  schema={[organization, breadcrumbs([{ name: 'LidShutter', path: '/' }, { name: 'Terms of Use', path: '/terms' }])]}
+>
+  <Prose eyebrow="Terms" title="Terms of Use" updated="October 7, 2026">
+    <p class="callout"><strong>The short version:</strong> you buy LidShutter once and use it on the Macs your license covers. Don’t share your key or copy the app. You can get your money back within 7 days.</p>
+
+    <h2>Your license</h2>
+    <p>
+      When you buy LidShutter you get a personal, non-transferable license to use the app on the number of Macs your key
+      covers (one Mac, or the number in the pack you bought). It is a one-time purchase, with no subscription. Updates to
+      LidShutter are included.
+    </p>
+    <p>
+      You can move your license to a new Mac. In LidShutter, open License and choose Deactivate this Mac, then use the same
+      key on the new Mac.
+    </p>
+
+    <h2>What you can’t do</h2>
+    <ul>
+      <li>Share your license key with other people, or post it publicly.</li>
+      <li>Copy, resell or redistribute the app.</li>
+      <li>Get around or tamper with the license check, or reverse engineer the app, except where the law allows it.</li>
+    </ul>
+    <p>If a key is shared or abused, we may switch it off.</p>
+
+    <h2>Buying, payments and refunds</h2>
+    <p>
+      Payments and license keys are handled by Polar, who act as the seller and process your payment. Prices are in US
+      dollars. You can ask for a full refund within 7 days of buying: see the <a href="/refund">refund policy</a>. A refunded
+      license stops working.
+    </p>
+
+    <h2>Updates and changes</h2>
+    <p>
+      LidShutter checks for new versions about once a day. We may change or improve the app over time, and we may update
+      these terms. The date at the top shows when they last changed.
+    </p>
+
+    <h2>No guarantees</h2>
+    <p>
+      We work hard to make LidShutter reliable, but it is provided “as is”, without promises that it will work on every Mac
+      or be free of errors. To the extent the law allows, we are not responsible for indirect or accidental losses from using
+      it, and our responsibility is limited to the amount you paid for your license.
+    </p>
+
+    <h2>Your privacy</h2>
+    <p>See the <a href="/privacy">privacy policy</a> for exactly what the app and the website collect.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about these terms? Email <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>.</p>
+  </Prose>
+</Base>

@@ -13,6 +13,7 @@ const facts = () => `- What it is: a paid macOS menu bar app that plays a sound 
 - Requirements: ${site.requirements}. Works on Macs with a lid; on MacBooks with a lid angle sensor the close sound can start before the lid shuts.
 - Price: one-time purchase in US dollars, no subscription. Launch pricing for one Mac starts at ${formatUsd(pricing.tiers[0])} and rises as launch licenses sell (${pricing.slotsPerTier} licenses at each of ${pricing.tiers.map(formatUsd).join(', ')}; ${launchSlots} launch licenses in total). After that one Mac costs ${formatUsd(pricing.tiers[pricing.tiers.length - 1])}.
 - Several Macs: one license key can cover 2 to 10 Macs (${pricing.packs.map((p) => `${p.macs} Macs ${formatUsd(p.usd)}`).join(', ')}).
+- Refunds: 7 days from purchase, full refund, by emailing ${site.supportEmail}. A refunded key stops working.
 - License: lifetime license with free updates. One key activates the number of Macs it was bought for; a key can be moved to a new Mac by deactivating the old one.
 - No trial: the app stays locked until a license key is activated (needs internet once; then it works offline).
 - Privacy: the app has no account and no analytics. It only contacts the license service to activate, deactivate and re-check a key, and lidshutter.com about once a day to look for a new version.
@@ -34,6 +35,8 @@ ${facts()}
 - [How the close sound plays before the lid shuts](${link('/blog/macbook-lid-angle-sound')}): lid angle detection explained
 - [How every sound is made in code](${link('/blog/sounds-made-in-code')}): how the sounds are built
 - [Privacy policy](${link('/privacy')}): exactly what the app and the website collect
+- [Refund policy](${link('/refund')}): 7-day refund
+- [Terms of use](${link('/terms')}): license and use
 - [Support](${link('/support')}): contact and feedback
 
 ## Optional
