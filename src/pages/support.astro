@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+---
+
+<Base title="Support" description="Send feedback or ask a question about LidShutter." home={false}>
+  <Prose eyebrow="Support" title="Send us feedback">
+    <form id="feedback" class="fb" novalidate>
+      <label>Your email<input type="email" name="email" required autocomplete="email" placeholder="you@example.com" /></label>
+      <label>Message<textarea name="message" rows="6" required placeholder="Tell us what's on your mind"></textarea></label>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
+      <button type="submit">Send</button>
+      <p class="status" role="status" aria-live="polite"></p>
+    </form>
+  </Prose>
+</Base>
+
+<style>
+  .fb { display: grid; gap: 16px; max-width: 520px; }
+  .fb label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+  .fb input, .fb textarea { font: inherit; font-weight: 400; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(0,0,0,.18); background: #fff; color: inherit; }
+  .fb button { justify-self: start; font: inherit; font-weight: 700; padding: 12px 24px; border: 0; border-radius: 999px; background: #ffc247; color: #1a1205; cursor: pointer; }
+  .fb button:disabled { opacity: .6; cursor: default; }
+  .hp { position: absolute; left: -9999px; }
+  .status { margin: 0; min-height: 1.4em; font-size: 14px; }
+</style>
+
+<script>
+  const form = document.getElementById('feedback') as HTMLFormElement;
+  const status = form.querySelector('.status') as HTMLElement;
+  const btn = form.querySelector('button') as HTMLButtonElement;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    status.textContent = 'Sending…';
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (res.ok) { form.reset(); status.textContent = 'Thanks! Your message was sent.'; }
+      else status.textContent = out.error || 'Something went wrong.';
+    } catch { status.textContent = 'Could not send. Please try again.'; }
+    btn.disabled = false;
+  });
+</script>

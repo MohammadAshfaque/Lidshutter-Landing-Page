@@ -1,0 +1,1396 @@
+---
+import Icon from './Icon.astro';
+import menubarSvg from '../data/menubar.svg?raw';
+
+// Each card: a small illustration that reacts, then the words. Pink, mint and so on are the app's own tints.
+const cards = [
+  {
+    id: 'angle',
+    tint: 'gold',
+    icon: 'Gauge',
+    title: 'Plays before the lid even shuts',
+    lead: 'macOS turns the speakers off the moment your lid closes.',
+    rest: 'LidShutter reads the lid angle, so the goodbye sound starts while the lid is still moving and lands right as it shuts.',
+  },
+  {
+    id: 'haptics',
+    tint: 'pink',
+    icon: 'Vibrate',
+    title: 'Feel every sound',
+    lead: 'Rest a finger on your trackpad and feel the shutter rattle.',
+    rest: 'Every sound has its own pattern: bell strikes, raindrops, a supercar’s rev. Like it stronger? Turn it up.',
+  },
+  {
+    id: 'background',
+    tint: 'mint',
+    icon: 'Moon',
+    title: 'Close it. The shop stays open.',
+    lead: 'Close the dashboard or press ⌘Q and LidShutter tucks back into your menu bar.',
+    rest: 'It sleeps until macOS says your lid moved, so it never keeps your Mac awake.',
+  },
+  {
+    id: 'volume',
+    tint: 'coral',
+    icon: 'Volume2',
+    title: 'Up to 200% volume',
+    lead: 'Need it louder? Push past 100%.',
+    rest: 'The sound itself gets louder, with a soft limiter so it stays clean.',
+  },
+  {
+    id: 'break',
+    tint: 'mint',
+    icon: 'Timer',
+    title: 'Only after a real break',
+    lead: 'Skip the sound after a quick close and open.',
+    rest: 'Play it only if the lid stayed closed for a while.',
+  },
+  {
+    id: 'login',
+    tint: 'coral',
+    icon: 'Power',
+    title: 'Starts with your Mac',
+    lead: 'Turn on “Open at login”.',
+    rest: 'The sound always works, even after a restart.',
+  },
+  {
+    id: 'native',
+    tint: 'lilac',
+    icon: 'Feather',
+    title: 'Native and tiny',
+    lead: 'Built in Swift and SwiftUI.',
+    rest: 'Just a small icon in your menu bar.',
+  },
+];
+---
+
+<section class="section features-section" id="features">
+  <div class="container">
+    <div class="head reveal">
+      <div>
+        <p class="eyebrow"><Icon name="Sparkles" /> Thoughtful details</p>
+        <h2 class="h2">Small app.<br /><span class="dim">Lots of care.</span></h2>
+      </div>
+      <div class="arrows">
+        <button type="button" class="arrow" data-prev aria-label="Previous"><Icon name="ArrowLeft" /></button>
+        <button type="button" class="arrow" data-next aria-label="Next"><Icon name="ArrowRight" /></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rail" data-rail tabindex="0" aria-label="Thoughtful details">
+    <div class="track">
+      {
+        cards.map((c) => (
+          <article class="card" data-tint={c.tint} data-card={c.id}>
+            <div class="art" aria-hidden={c.id === 'haptics' ? undefined : 'true'}>
+              {c.id === 'angle' && (
+                <div class="glass angle">
+                  <svg viewBox="-8 0 196 124" class="angle-svg">
+                    <path class="zone" d="M30 107 L120 107 A90 90 0 0 0 106.3 59.3 Z" />
+                    <path class="arc" d="M120 107 A90 90 0 0 0 2.2 21.4" />
+                    <g class="lid-g">
+                      <line class="lid" x1="30" y1="107" x2="120" y2="107" />
+                    </g>
+                    <rect class="base" x="22" y="107" width="112" height="8" rx="4" />
+                    <circle class="pivot" cx="30" cy="107" r="3" />
+                    <g class="hit">
+                      <line x1="127" y1="97" x2="133" y2="90" />
+                      <line x1="131" y1="104" x2="139" y2="102" />
+                      <line x1="123" y1="92" x2="124" y2="84" />
+                    </g>
+                  </svg>
+                  <p class="readout">
+                    <span class="deg" />
+                    <span class="tag">
+                      <span class="t-open">Open</span>
+                      <span class="t-start">Sound starts</span>
+                      <span class="t-closed">Closed</span>
+                    </span>
+                  </p>
+                </div>
+              )}
+
+              {c.id === 'haptics' && (
+                <div class="haptic">
+                  <div class="glass pad" aria-hidden="true">
+                    <span class="rings" data-rings />
+                    <span class="finger" />
+                  </div>
+                  <div class="glass seg" role="radiogroup" aria-label="Vibration strength" data-strength>
+                    <button type="button" role="radio" aria-checked="false" data-value="light">Light</button>
+                    <button type="button" role="radio" aria-checked="true" data-value="medium">Medium</button>
+                    <button type="button" role="radio" aria-checked="false" data-value="strong">Strong</button>
+                    <span class="thumb" aria-hidden="true" />
+                  </div>
+                </div>
+              )}
+
+              {c.id === 'background' && (
+                <div class="stack bg">
+                  <div class="glass menubar">
+                    <span class="mb-glyph" set:html={menubarSvg} />
+                    <span class="running">Still running</span>
+                  </div>
+                  <div class="glass win">
+                    <span class="lights">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                    <span class="line w60" />
+                    <span class="line w40" />
+                  </div>
+                  <div class="glass battery">
+                    <span class="b-ico">
+                      <Icon name="Leaf" />
+                    </span>
+                    Battery use<strong>Very low</strong>
+                  </div>
+                </div>
+              )}
+
+              {c.id === 'volume' && (
+                <div class="glass volume">
+                  <span class="v-ico">
+                    <Icon name="Volume2" />
+                  </span>
+                  <div class="slider">
+                    <span class="fill" />
+                    <span class="mark" />
+                    <span class="knob" />
+                  </div>
+                  <span class="pct" />
+                </div>
+              )}
+
+              {c.id === 'break' && (
+                <div class="glass picker">
+                  <p class="p-label">Only if closed for at least</p>
+                  <ul class="options">
+                    <li>Always</li>
+                    <li>5 minutes</li>
+                    <li>1 hour</li>
+                    <span class="sel" />
+                  </ul>
+                </div>
+              )}
+
+              {c.id === 'login' && (
+                <div class="glass login">
+                  <div class="l-row">
+                    <span class="l-app">
+                      <span class="glyph" set:html={menubarSvg} />
+                    </span>
+                    <div class="l-text">
+                      <strong>LidShutter</strong>
+                      <span>Open at login</span>
+                    </div>
+                    <span class="sw">
+                      <span class="sw-knob" />
+                      <svg class="cursor" viewBox="0 0 18 24" width="18" height="24">
+                        <path d="M2 2 L2 18.5 L6.4 14.6 L9.4 21.5 L12.2 20.3 L9.2 13.5 L15 13.3 Z" fill="#1d1d1f" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {c.id === 'native' && (
+                <div class="native">
+                  <div class="glass icon-tile">
+                    <span class="glyph" set:html={menubarSvg} />
+                  </div>
+                  <div class="chips">
+                    <span class="chip">Swift</span>
+                    <span class="chip">SwiftUI</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div class="body">
+              <h3 class="h3">
+                <span class="ico">
+                  <Icon name={c.icon} />
+                </span>
+                {c.title}
+              </h3>
+              <p class="copy">
+                <span class="first">{c.lead}</span> <span class="rest">{c.rest}</span>
+              </p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .features-section {
+    overflow: hidden;
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: clamp(28px, 4vw, 44px);
+  }
+
+  .head .h2 {
+    max-width: 560px;
+  }
+
+  .head .dim {
+    color: var(--text-3);
+  }
+
+  .arrows {
+    display: flex;
+    gap: 10px;
+    flex: none;
+  }
+
+  .arrow {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    color: var(--text);
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.35s var(--spring), opacity 0.2s;
+  }
+
+  .arrow :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .arrow:hover:not(:disabled) {
+    background: var(--card-hover);
+    transform: scale(1.06);
+  }
+
+  .arrow:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+
+  .arrow:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  /* MARK: The rail: starts on the page's left edge, runs off the right edge, snaps card by card */
+
+  .rail {
+    --edge: max(var(--gutter), calc((100vw - var(--max)) / 2));
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--edge);
+    scrollbar-width: none;
+    padding-block: 6px 12px;
+    outline: none;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .track {
+    display: flex;
+    gap: 16px;
+    width: max-content;
+    padding-inline: var(--edge);
+  }
+
+  .card {
+    flex: none;
+    width: clamp(280px, 78vw, 360px);
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--stroke) inset, 0 1px 2px rgb(0 0 0 / 0.03);
+    transition: transform 0.5s var(--ease-out), box-shadow 0.3s;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 0 1px var(--stroke) inset, var(--shadow);
+  }
+
+  .art {
+    position: relative;
+    aspect-ratio: 1 / 0.82;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    overflow: hidden;
+    border-radius: 20px;
+    background:
+      radial-gradient(70% 60% at 20% 0%, rgb(255 255 255 / 0.85), transparent 70%),
+      linear-gradient(165deg, color-mix(in srgb, var(--tint) 34%, #fff), color-mix(in srgb, var(--tint) 14%, #fff));
+  }
+
+  .body {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: 20px 14px 18px;
+  }
+
+  .body .h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+  }
+
+  .ico {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--text);
+    background: var(--fill);
+  }
+
+  .ico :global(svg) {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.2;
+  }
+
+  /* Two tones, like a sentence and its follow-up */
+  .copy {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text-3);
+    text-wrap: pretty;
+  }
+
+  .copy .first {
+    color: var(--text);
+  }
+
+  /* MARK: Glass pieces drawn inside each illustration */
+
+  .glass {
+    background: rgb(255 255 255 / 0.62);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.7) inset, 0 12px 30px -14px rgb(0 0 0 / 0.28);
+    color: var(--text);
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .card:hover .glass {
+    transform: scale(1.03);
+  }
+
+  /* Illustrations only move while their card is on screen (set from script) */
+  .card:not(.is-live) .art,
+  .card:not(.is-live) .art * {
+    animation-play-state: paused !important;
+  }
+
+  /* MARK: Lid angle: the lid closes, the number counts down, the sound starts on the way */
+
+  @property --a {
+    syntax: '<integer>';
+    initial-value: 108;
+    inherits: true;
+  }
+
+  .angle {
+    width: 84%;
+    padding: 16px 18px 14px;
+    animation: angle 6s linear infinite;
+  }
+
+  .angle-svg {
+    width: 100%;
+    display: block;
+    overflow: hidden;
+  }
+
+  .zone {
+    fill: color-mix(in srgb, var(--gold) 38%, transparent);
+  }
+
+  .arc {
+    fill: none;
+    stroke: rgb(0 0 0 / 0.16);
+    stroke-width: 1.6;
+    stroke-dasharray: 2 6;
+    stroke-linecap: round;
+  }
+
+  .lid-g {
+    transform-box: view-box;
+    transform-origin: 30px 107px;
+    transform: rotate(calc(var(--a) * -1deg));
+  }
+
+  .lid {
+    stroke: #1d1d1f;
+    stroke-width: 7;
+    stroke-linecap: round;
+  }
+
+  .base {
+    fill: #1d1d1f;
+  }
+
+  .pivot {
+    fill: #fff;
+  }
+
+  .hit line {
+    stroke: var(--rust);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .hit {
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: 122px 107px;
+    animation: hit 6s ease-out infinite;
+  }
+
+  .readout {
+    margin: 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .deg {
+    min-width: 3.4ch;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .deg::before {
+    counter-reset: deg var(--a);
+    content: counter(deg) '°';
+  }
+
+  .tag {
+    position: relative;
+    display: inline-grid;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+    background: rgb(0 0 0 / 0.06);
+    animation: tag-bg 6s linear infinite;
+  }
+
+  .tag span {
+    grid-area: 1 / 1;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+  }
+
+  .t-open {
+    animation: t-open 6s linear infinite;
+  }
+
+  .t-start {
+    color: var(--on-gold);
+    animation: t-start 6s linear infinite;
+  }
+
+  .t-closed {
+    animation: t-closed 6s linear infinite;
+  }
+
+  /* The lid closes (an ease-in, spelled out so the label changes exactly as it enters the gold zone), rests, then opens. */
+  @keyframes angle {
+    0%,
+    8% {
+      --a: 108;
+    }
+    20% {
+      --a: 96;
+    }
+    32% {
+      --a: 70;
+    }
+    43% {
+      --a: 32;
+    }
+    52% {
+      --a: 7;
+    }
+    58%,
+    66% {
+      --a: 0;
+    }
+    70% {
+      --a: 62;
+    }
+    76% {
+      --a: 100;
+    }
+    80%,
+    100% {
+      --a: 108;
+    }
+  }
+
+  @keyframes hit {
+    0%,
+    57% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    68%,
+    100% {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+  }
+
+  /* Open until the lid enters the zone, "Sound starts" from there to the shut, then "Closed" until it reopens. */
+  @keyframes t-open {
+    0%,
+    42.9% {
+      opacity: 1;
+    }
+    43%,
+    79.9% {
+      opacity: 0;
+    }
+    80%,
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes t-start {
+    0%,
+    42.9% {
+      opacity: 0;
+    }
+    43%,
+    57.9% {
+      opacity: 1;
+    }
+    58%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes t-closed {
+    0%,
+    57.9% {
+      opacity: 0;
+    }
+    58%,
+    79.9% {
+      opacity: 1;
+    }
+    80%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes tag-bg {
+    0%,
+    42.9% {
+      background: rgb(0 0 0 / 0.06);
+    }
+    43%,
+    57.9% {
+      background: var(--gold);
+    }
+    58%,
+    100% {
+      background: rgb(0 0 0 / 0.06);
+    }
+  }
+
+  /* MARK: Trackpad: a finger rests, taps make rings. Pick a strength to feel more of them. */
+
+  .haptic {
+    width: 82%;
+    display: grid;
+    gap: 12px;
+  }
+
+  .pad {
+    position: relative;
+    height: 96px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  .finger {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff9fcb, var(--pink));
+    box-shadow: 0 6px 14px -4px rgb(255 115 179 / 0.7);
+    animation: press 2.4s ease-in-out infinite;
+  }
+
+  .rings i {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    border-radius: 50%;
+    border: 2px solid var(--pink);
+    opacity: 0;
+    animation: ring 0.9s ease-out forwards;
+  }
+
+  .rings i.strong {
+    border-width: 3px;
+  }
+
+  .pad::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    border-radius: 50%;
+    border: 2px solid var(--pink);
+    opacity: 0;
+    animation: idle-ring 2.4s ease-out infinite;
+  }
+
+  .seg {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 4px;
+    border-radius: 999px;
+  }
+
+  .seg button {
+    position: relative;
+    z-index: 1;
+    padding: 7px 0;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .seg button[aria-checked='true'] {
+    color: var(--text);
+  }
+
+  .thumb {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc((100% - 8px) / 3);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.14);
+    transform: translateX(calc(var(--i, 1) * 100%));
+    transition: transform 0.45s var(--spring);
+  }
+
+  @keyframes press {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    8% {
+      transform: scale(0.84);
+    }
+    18% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes idle-ring {
+    0%,
+    6% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    60%,
+    100% {
+      opacity: 0;
+      transform: scale(3.6);
+    }
+  }
+
+  @keyframes ring {
+    from {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(3.8);
+    }
+  }
+
+  /* MARK: Background: the window closes, the menu bar icon keeps running */
+
+  .stack {
+    position: relative;
+    width: 86%;
+    height: 82%;
+  }
+
+  .bg .menubar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 0 12px;
+    border-radius: 12px;
+  }
+
+  .mb-glyph {
+    width: 18px;
+    color: var(--text);
+    animation: glow 2.8s ease-in-out infinite;
+  }
+
+  .mb-glyph :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+
+  .running {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--mint) 35%, #fff);
+    animation: running 5.2s ease-in-out infinite;
+  }
+
+  .bg .win {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    top: 46px;
+    height: 78px;
+    padding: 12px 14px;
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    transform-origin: 50% 0;
+    animation: window 5.2s cubic-bezier(0.5, 0, 0.3, 1) infinite;
+  }
+
+  .lights {
+    display: flex;
+    gap: 5px;
+  }
+
+  .lights i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff6159;
+  }
+
+  .lights i:nth-child(2) {
+    background: #ffbd2e;
+  }
+
+  .lights i:nth-child(3) {
+    background: #28c93f;
+  }
+
+  .line {
+    height: 6px;
+    border-radius: 3px;
+    background: rgb(0 0 0 / 0.12);
+  }
+
+  .w60 {
+    width: 60%;
+  }
+
+  .w40 {
+    width: 40%;
+  }
+
+  .battery {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 12px;
+  }
+
+  .battery strong {
+    margin-left: auto;
+    color: #1f9d5b;
+    font-weight: 600;
+  }
+
+  .b-ico {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    color: #fff;
+    background: var(--mint);
+  }
+
+  .b-ico :global(svg) {
+    width: 13px;
+    height: 13px;
+  }
+
+  @keyframes window {
+    0%,
+    20% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    40%,
+    78% {
+      opacity: 0;
+      transform: scale(0.82) translateY(-24px);
+    }
+    92%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes running {
+    0%,
+    34% {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    46%,
+    78% {
+      opacity: 1;
+      transform: none;
+    }
+    90%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes glow {
+    50% {
+      filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold) 90%, transparent));
+    }
+  }
+
+  /* MARK: Volume: the slider runs past 100% */
+
+  @property --v {
+    syntax: '<integer>';
+    initial-value: 70;
+    inherits: true;
+  }
+
+  .volume {
+    width: 86%;
+    padding: 20px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: vol 5s ease-in-out infinite;
+  }
+
+  .v-ico {
+    display: grid;
+    place-items: center;
+    color: var(--text-2);
+  }
+
+  .v-ico :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+
+  .slider {
+    position: relative;
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: rgb(0 0 0 / 0.12);
+  }
+
+  .fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--v) * 0.5%);
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--gold), color-mix(in srgb, var(--coral) calc((var(--v) - 100) * 1%), var(--gold)));
+  }
+
+  .knob {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--v) * 0.5%);
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  }
+
+  /* The 100% line */
+  .mark {
+    position: absolute;
+    left: 50%;
+    top: -5px;
+    bottom: -5px;
+    width: 2px;
+    background: rgb(0 0 0 / 0.25);
+  }
+
+  .pct {
+    min-width: 52px;
+    text-align: right;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pct::before {
+    counter-reset: v var(--v);
+    content: counter(v) '%';
+  }
+
+  @keyframes vol {
+    0%,
+    10% {
+      --v: 70;
+    }
+    55%,
+    70% {
+      --v: 200;
+    }
+    92%,
+    100% {
+      --v: 70;
+    }
+  }
+
+  /* MARK: Only after a break: a picker whose choice moves down the list */
+
+  .picker {
+    width: 78%;
+    padding: 16px 16px 14px;
+  }
+
+  .p-label {
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .options {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 4px;
+  }
+
+  .options li {
+    position: relative;
+    z-index: 1;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .sel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 38px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--mint) 55%, #fff);
+    animation: pick 5.4s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes pick {
+    0%,
+    18% {
+      transform: translateY(0);
+    }
+    32%,
+    52% {
+      transform: translateY(42px);
+    }
+    66%,
+    86% {
+      transform: translateY(84px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  /* MARK: Login: a cursor switches it on, then off */
+
+  .login {
+    position: relative;
+    width: 86%;
+    padding: 22px 18px;
+    display: grid;
+  }
+
+  .l-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .l-app {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #17161b;
+    box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.5);
+  }
+
+  .l-app .glyph {
+    width: 20px;
+    color: var(--gold);
+  }
+
+  .l-app .glyph :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+
+  .l-text {
+    display: grid;
+    flex: 1;
+    gap: 2px;
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .l-text span {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .sw {
+    position: relative;
+    flex: none;
+    width: 46px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.16);
+    animation: sw-bg 6s linear infinite;
+  }
+
+  .sw-knob {
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.28);
+    animation: sw-knob 6s linear infinite;
+  }
+
+  /* The cursor's tip lands on the switch's exact centre (the drawing's tip is 2px in from its corner) */
+  .cursor {
+    position: absolute;
+    left: calc(50% - 2px);
+    top: calc(50% - 2px);
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transform-origin: 2px 2px;
+    filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.25));
+    animation: cursor 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  }
+
+  /* Glide in, click (on), click again (off), leave */
+  @keyframes cursor {
+    0%,
+    6% {
+      opacity: 0;
+      transform: translate(-90px, 50px);
+    }
+    10% {
+      opacity: 1;
+      transform: translate(-90px, 50px);
+    }
+    26% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+    28% {
+      transform: translate(0, 0) scale(0.8);
+    }
+    31% {
+      transform: translate(0, 0) scale(1);
+    }
+    58% {
+      transform: translate(0, 0) scale(1);
+    }
+    60% {
+      transform: translate(0, 0) scale(0.8);
+    }
+    63% {
+      transform: translate(0, 0) scale(1);
+    }
+    72% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+    86%,
+    100% {
+      opacity: 0;
+      transform: translate(36px, 44px);
+    }
+  }
+
+  @keyframes sw-bg {
+    0%,
+    28.9% {
+      background: rgb(0 0 0 / 0.16);
+    }
+    32%,
+    59.9% {
+      background: #34c759;
+    }
+    64%,
+    100% {
+      background: rgb(0 0 0 / 0.16);
+    }
+  }
+
+  @keyframes sw-knob {
+    0%,
+    28.9% {
+      transform: translateX(0);
+    }
+    33%,
+    59.9% {
+      transform: translateX(18px);
+    }
+    65%,
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  /* MARK: Native and tiny */
+
+  .native {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+  }
+
+  .icon-tile {
+    width: 84px;
+    height: 84px;
+    display: grid;
+    place-items: center;
+    border-radius: 24px;
+    animation: bob 4s ease-in-out infinite;
+  }
+
+  .icon-tile .glyph {
+    width: 40px;
+  }
+
+  .icon-tile .glyph :global(svg) {
+    width: 100%;
+    height: auto;
+    color: var(--text);
+  }
+
+  .chips {
+    display: flex;
+    gap: 8px;
+  }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgb(255 255 255 / 0.7);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.7) inset, 0 6px 16px -8px rgb(0 0 0 / 0.25);
+  }
+
+  @keyframes bob {
+    50% {
+      transform: translateY(-5px) rotate(-3deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .art,
+    .art * {
+      animation: none !important;
+    }
+
+    .card,
+    .glass {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .arrow {
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>
+
+<script>
+  import { getState, onPlay, setState, subscribe, type HapticStrength } from '../scripts/audio';
+  import { adjusted, hapticPattern } from '../scripts/haptics';
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // MARK: Illustrations only run while their card is on screen
+  const cards = [...document.querySelectorAll<HTMLElement>('.features-section .card')];
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => e.target.classList.toggle('is-live', e.isIntersecting)), { threshold: 0.4 });
+  cards.forEach((c) => io.observe(c));
+
+  // MARK: Arrows and the rail
+  const rail = document.querySelector<HTMLElement>('[data-rail]')!;
+  const prev = document.querySelector<HTMLButtonElement>('[data-prev]')!;
+  const next = document.querySelector<HTMLButtonElement>('[data-next]')!;
+  const step = () => (cards[0]?.offsetWidth ?? 320) + 16;
+  const update = () => {
+    prev.disabled = rail.scrollLeft < 8;
+    next.disabled = rail.scrollLeft > rail.scrollWidth - rail.clientWidth - 8;
+  };
+  prev.addEventListener('click', () => rail.scrollBy({ left: -step(), behavior: 'smooth' }));
+  next.addEventListener('click', () => rail.scrollBy({ left: step(), behavior: 'smooth' }));
+  rail.addEventListener('scroll', update, { passive: true });
+  rail.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') rail.scrollBy({ left: step(), behavior: 'smooth' });
+    if (e.key === 'ArrowLeft') rail.scrollBy({ left: -step(), behavior: 'smooth' });
+  });
+  window.addEventListener('resize', update);
+  update();
+
+  // MARK: Trackpad: rings in time with whatever sound plays, using the app's own patterns
+  const rings = document.querySelector<HTMLElement>('[data-rings]')!;
+  let timers: number[] = [];
+
+  function ring(strong: boolean) {
+    if (reduceMotion) return;
+    const el = document.createElement('i');
+    if (strong) el.classList.add('strong');
+    el.addEventListener('animationend', () => el.remove());
+    rings.appendChild(el);
+  }
+
+  function rattle(id: Parameters<typeof hapticPattern>[0], duration: number) {
+    timers.forEach(clearTimeout);
+    const taps = adjusted(hapticPattern(id, duration), getState().hapticStrength);
+    timers = taps.map(([t, strong]) => window.setTimeout(() => ring(strong), t * 1000));
+    if ('vibrate' in navigator && getState().haptics) {
+      try {
+        const pattern: number[] = [];
+        let cursor = 0;
+        for (const [t, strong] of taps) {
+          const at = Math.round(t * 1000);
+          if (pattern.length) pattern.push(Math.max(0, at - cursor));
+          const length = strong ? 30 : 12;
+          pattern.push(length);
+          cursor = at + length;
+        }
+        navigator.vibrate(pattern);
+      } catch {
+        /* not allowed here */
+      }
+    }
+  }
+
+  onPlay((id, duration) => rattle(id, duration));
+
+  const seg = document.querySelector<HTMLElement>('[data-strength]')!;
+  const options = [...seg.querySelectorAll<HTMLButtonElement>('[data-value]')];
+  options.forEach((o) =>
+    o.addEventListener('click', () => {
+      setState({ hapticStrength: o.dataset.value as HapticStrength });
+      rattle(getState().openSound, 1.6);
+    }),
+  );
+  subscribe(({ hapticStrength }) => {
+    options.forEach((o, i) => {
+      const on = o.dataset.value === hapticStrength;
+      o.setAttribute('aria-checked', String(on));
+      if (on) seg.style.setProperty('--i', String(i));
+    });
+  });
+</script>

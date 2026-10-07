@@ -1,0 +1,261 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+
+const faqs = [
+  {
+    q: 'How does LidShutter know when I open the lid?',
+    a: 'It listens for the lid and sleep/wake events macOS already sends. On MacBooks with a lid angle sensor, it also reads the angle, so the close sound can start while the lid is still moving.',
+  },
+  {
+    q: 'Does it drain my battery?',
+    a: 'No. Battery use is very low: LidShutter sleeps until macOS reports that your lid moved, and it never keeps your Mac awake.',
+  },
+  {
+    q: 'Does it keep running if I close the window?',
+    a: 'Yes. Closing the dashboard or pressing ⌘Q tucks LidShutter back into the menu bar, and your sounds keep working. To stop it completely, choose Quit from the menu bar.',
+  },
+  {
+    q: 'How does the trackpad vibration work?',
+    a: 'MacBooks with a Force Touch trackpad buzz along with each sound, and each sound has its own pattern. You feel it while a finger rests on the trackpad. Choose Light, Medium, or Strong in Settings (Strong taps harder and more often), or turn it off.',
+  },
+  {
+    q: 'Can it get louder than my Mac’s volume?',
+    a: 'Yes. The volume slider goes up to 200%. Above 100%, LidShutter makes the sound itself louder, with a soft limiter so it stays clean instead of crackling.',
+  },
+  {
+    q: 'Can it pick a sound for me?',
+    a: 'Yes. Click the dice next to “When I open” or “When I close” in the menu bar, and LidShutter picks a different random sound, plays it, and keeps it as your new choice.',
+  },
+  {
+    q: 'Can I stop it from playing in a meeting?',
+    a: 'Yes. Pause it with one switch in the menu bar, turn the volume down, or set it to play only after the lid has been closed for a while.',
+  },
+  {
+    q: 'Does it work offline?',
+    a: 'Yes. It needs the internet once, to activate your key. After that it works offline. If your Mac happens to be online, it quietly re-checks the key about once a week, and nothing about how you use it ever leaves your Mac.',
+  },
+  {
+    q: 'Does it collect any data?',
+    a: 'Nothing about you or how you use it. There is no account and no analytics. Your opening stats stay on your Mac. When you activate, your license key and your Mac’s model go to our payment provider, and that’s all.',
+  },
+  {
+    q: 'How does the license work?',
+    a: 'You pay once and get a license key by email, and on the page right after you pay. Open LidShutter, go to License in the dashboard, paste the key, and press Activate. No subscription, and updates are free.',
+  },
+  {
+    q: 'Can I use it on more than one Mac?',
+    a: 'One key activates one Mac. If you have several, choose a multi-Mac pack (2 to 10 Macs): it’s one key that activates on all of them, and each Mac costs less.',
+  },
+  {
+    q: 'What if I get a new Mac?',
+    a: 'In LidShutter, open License and choose Deactivate this Mac. That frees the slot, and you can use the same key on your new Mac.',
+  },
+  {
+    q: 'Which Macs does it work on?',
+    a: `Any MacBook running ${site.requirements}. It needs a lid, so it’s made for MacBook Air and MacBook Pro.`,
+  },
+  {
+    q: 'Where are the sounds from?',
+    a: 'Every sound is original and generated in code inside the app. There are no recordings and nothing to license, and they’re created in a few milliseconds when they play.',
+  },
+];
+---
+
+<section class="section" id="faq">
+  <div class="container wide">
+    <div class="layout">
+      <div class="list" role="list">
+        {
+          faqs.map((f, i) => (
+            <details class="item reveal" style={`--delay:${i * 0.04}s`} name="faq" role="listitem">
+              <summary>
+                <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span class="q">{f.q}</span>
+                <span class="chev" aria-hidden="true">
+                  <Icon name="ChevronDown" />
+                </span>
+              </summary>
+              <div class="a">
+                <p>{f.a}</p>
+              </div>
+            </details>
+          ))
+        }
+      </div>
+
+      <aside class="head reveal">
+        <p class="eyebrow"><Icon name="MousePointerClick" /> Questions</p>
+        <h2 class="h2">Good to know.</h2>
+        <p class="lead">Licenses, offline use, your Macs and your privacy, answered in a few lines.</p>
+        <a class="ask" href={`mailto:${site.supportEmail}`}>
+          <span>Still curious?</span>
+          <strong>Email {site.supportEmail}</strong>
+        </a>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<style>
+  .wide {
+    max-width: calc(1120px + var(--gutter) * 2);
+  }
+
+  /* Answers on the left, the heading on the right */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: clamp(32px, 6vw, 88px);
+    align-items: start;
+  }
+
+  .head {
+    order: 2;
+    position: sticky;
+    top: 110px;
+    display: grid;
+    justify-items: start;
+    gap: 14px;
+  }
+
+  .head .h2 {
+    margin: 0;
+  }
+
+  .head .lead {
+    margin: 0;
+    max-width: 340px;
+    color: var(--text-2);
+  }
+
+  .ask {
+    margin-top: 10px;
+    display: grid;
+    gap: 2px;
+    padding: 16px 20px;
+    border-radius: var(--r-card);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    color: var(--text-2);
+    font-size: 14px;
+    transition: background-color 0.2s, transform 0.35s var(--spring);
+  }
+
+  .ask strong {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .ask:hover {
+    background: var(--card-hover);
+    transform: translateY(-2px);
+  }
+
+  .list {
+    order: 1;
+    border-top: 1px solid var(--stroke);
+  }
+
+  .item {
+    border-bottom: 1px solid var(--stroke);
+  }
+
+  summary {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 30px;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 4px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary:hover .q {
+    color: var(--accent);
+  }
+
+  .num {
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: var(--text-3);
+  }
+
+  .chev {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--fill);
+    transition: transform 0.4s var(--spring), background-color 0.2s, color 0.2s;
+  }
+
+  .chev :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .item[open] .chev {
+    transform: rotate(180deg);
+    background: rgb(255 194 71 / 0.2);
+    color: var(--accent);
+  }
+
+  .item[open] .q {
+    color: var(--text);
+  }
+
+  .a {
+    padding: 0 40px 24px 44px;
+  }
+
+  .a p {
+    margin: 0;
+    max-width: 600px;
+    color: var(--text-2);
+  }
+
+  .item[open] .a {
+    animation: slide 0.35s var(--ease-out);
+  }
+
+  @keyframes slide {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  @media (max-width: 860px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+
+    /* Heading first when stacked */
+    .head {
+      order: 0;
+      position: static;
+    }
+
+    .list {
+      order: 1;
+    }
+
+    .a {
+      padding: 0 8px 22px 44px;
+    }
+  }
+</style>

@@ -1,0 +1,255 @@
+---
+import { siClaude, siPerplexity, siGoogle } from 'simple-icons';
+import AppIcon from './AppIcon.astro';
+import Glyph from './Glyph.astro';
+import { site } from '../data/site';
+
+const year = new Date().getFullYear();
+
+const explore = [
+  { id: 'roll', label: 'Feel sounds' },
+  { id: 'how', label: 'How it works' },
+  { id: 'features', label: 'Features' },
+  { id: 'privacy', label: 'Privacy' },
+  { id: 'faq', label: 'FAQ' },
+  { id: 'pricing', label: 'Pricing' },
+];
+
+const resources = [
+  { href: '/changelog', label: 'Changelog' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/support', label: 'Support' },
+];
+
+const legal = [
+  { href: '/privacy', label: 'Privacy policy' },
+  { href: `mailto:${site.supportEmail}`, label: 'Contact' },
+];
+
+// "Ask AI": opens each assistant with a question about LidShutter, pointing it at lidshutter.com.
+const prompt = encodeURIComponent(
+  `What is LidShutter (${site.url})? Summarise what this Mac menu bar app does, its key features and sounds, its privacy approach and pricing. Use ${site.url.replace('https://', '')} as the primary source.`,
+);
+const brandSvg = (path: string) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="${path}"/></svg>`;
+const assistants = [
+  { name: 'ChatGPT', href: `https://chatgpt.com/?q=${prompt}`, glyph: 'open-ai-logo' },
+  { name: 'Claude', href: `https://claude.ai/new?q=${prompt}`, svg: brandSvg(siClaude.path) },
+  { name: 'Perplexity', href: `https://www.perplexity.ai/search?q=${prompt}`, svg: brandSvg(siPerplexity.path) },
+  { name: 'AI Mode', href: `https://www.google.com/search?udm=50&q=${prompt}`, svg: brandSvg(siGoogle.path) },
+  { name: 'Grok', href: `https://grok.com/?q=${prompt}`, glyph: 'x-logo' },
+];
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="top">
+      <div class="brand-col">
+        <a href="/" class="brand">
+          <AppIcon size={36} />
+          <strong>LidShutter</strong>
+        </a>
+        <p>Open your Mac like you open your shop. A tiny menu bar app, made with care in Swift.</p>
+      </div>
+
+      <nav class="cols" aria-label="Footer">
+        <div class="col">
+          <h3>Explore</h3>
+          {explore.map((l) => <a href={`/#${l.id}`}>{l.label}</a>)}
+        </div>
+        <div class="col">
+          <h3>Resources</h3>
+          {resources.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+        <div class="col">
+          <h3>Legal</h3>
+          {legal.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+      </nav>
+    </div>
+
+    <div class="ask">
+      <span class="ask-label"><Glyph name="sparkle" /> Ask AI about LidShutter</span>
+      <ul>
+        {
+          assistants.map((a) => (
+            <li>
+              <a href={a.href} target="_blank" rel="noopener noreferrer" aria-label={`Ask ${a.name} about LidShutter`}>
+                {a.glyph ? <Glyph name={a.glyph} /> : <Fragment set:html={a.svg} />}
+                {a.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="bottom">
+      <p>© {year} LidShutter. Mac and MacBook are trademarks of Apple Inc.</p>
+      <p>Made for people who like their Mac to say hello.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--stroke);
+    padding: clamp(48px, 6vw, 72px) 0 32px;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+
+  .top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr);
+    gap: 40px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand :global(img) {
+    border-radius: 9px;
+  }
+
+  .brand strong {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .brand-col p {
+    max-width: 300px;
+    margin: 14px 0 0;
+    line-height: 1.55;
+    color: var(--text-3);
+  }
+
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .col h3 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+
+  .col a {
+    width: fit-content;
+    color: var(--text-2);
+    transition: color 0.2s, transform 0.3s var(--spring);
+  }
+
+  .col a:hover {
+    color: var(--text);
+    transform: translateX(3px);
+  }
+
+  /* MARK: Ask AI */
+
+  .ask {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    margin-top: 44px;
+    padding: 16px 18px;
+    border-radius: var(--r-card);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+  }
+
+  .ask-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .ask-label :global(svg) {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+  }
+
+  .ask ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ask a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 13px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    background: var(--fill);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    transition: color 0.2s, background-color 0.2s, transform 0.35s var(--spring);
+  }
+
+  .ask a:hover {
+    color: var(--text);
+    background: var(--fill-strong);
+    transform: translateY(-2px);
+  }
+
+  .ask a:active {
+    transform: scale(0.95);
+  }
+
+  .ask a :global(svg) {
+    width: 15px;
+    height: 15px;
+  }
+
+  .bottom {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--stroke);
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .bottom p {
+    margin: 0;
+  }
+
+  @media (max-width: 760px) {
+    .top {
+      grid-template-columns: 1fr;
+    }
+
+    .cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

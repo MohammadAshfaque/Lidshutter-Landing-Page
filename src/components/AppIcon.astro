@@ -1,0 +1,20 @@
+---
+interface Props {
+  size: number;
+  class?: string;
+  eager?: boolean;
+}
+
+const { size, class: className, eager = false } = Astro.props;
+const src = size <= 32 ? 64 : size <= 128 ? 256 : 512;
+---
+
+<img
+  src={`/icons/app-icon-${src}.png`}
+  width={size}
+  height={size}
+  alt="LidShutter app icon"
+  class={className}
+  loading="eager"
+  decoding="async"
+/>

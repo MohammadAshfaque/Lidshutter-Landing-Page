@@ -1,0 +1,1410 @@
+---
+import Icon from './Icon.astro';
+import Glyph from './Glyph.astro';
+import { openGroups, closeGroup, totalSoundCount } from '../data/sounds';
+
+const groups = [...openGroups, closeGroup];
+const sounds = groups.flatMap((g) => g.sounds.map((s) => ({ ...s, tint: g.tint, group: g.title })));
+
+// Pip positions on a 3×3 grid for each face.
+const pips: Record<number, number[]> = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
+};
+const faces = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+const faceNumber: Record<string, number> = { front: 1, back: 6, right: 3, left: 4, top: 2, bottom: 5 };
+---
+
+<section class="section roll-section" id="roll">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow"><Icon name="Dices" /> Feel the sounds</p>
+      <h2 class="h2">{totalSoundCount} sounds live in this dice.</h2>
+      <p class="lead">Give it a roll. Whatever comes out plays, with its own little show.</p>
+    </div>
+
+    <div class="roll-grid">
+      <div class="dice-side reveal">
+        <button type="button" class="big-dice" data-big-dice aria-label="Roll the dice for a random sound">
+          <span class="dice-hop" data-dice-hop>
+            <span class="dice-tilt">
+              <span class="dice" data-dice-cube>
+                {faces.map((f) => <span class={`core core-${f}`} />)}
+                {
+                  faces.map((f) => (
+                    <span class={`face face-${f}`}>
+                      {Array.from({ length: 9 }, (_, i) => (
+                        <i class:list={[{ on: pips[faceNumber[f]].includes(i) }]} />
+                      ))}
+                    </span>
+                  ))
+                }
+              </span>
+            </span>
+          </span>
+          <span class="dice-shadow" data-dice-shadow></span>
+        </button>
+        <p class="dice-cta" data-dice-cta>Tap the dice to roll</p>
+
+        <div class="found" aria-live="polite">
+          <div class="found-dots" aria-hidden="true">
+            {sounds.map((s) => <i data-dot={s.id} data-tint={s.tint} title={s.title} />)}
+          </div>
+          <span class="found-text" data-found-text>Found <b data-found>0</b> of {totalSoundCount} sounds</span>
+        </div>
+      </div>
+
+      <div class="stage-card reveal" style="--delay:.1s" data-stage-card data-tint="gold" data-dark>
+        <div class="stage-top">
+          <span class="chip" data-chip>Ready when you are</span>
+          <button type="button" class="replay" data-replay hidden aria-label="Play this sound again">
+            <Icon name="RotateCcw" /> Replay
+          </button>
+        </div>
+
+        <div class="stage-area">
+          <div class="scene dice-stage" data-scene></div>
+          <div class="idle" data-idle>
+            <span class="idle-arrow"><Icon name="ArrowLeft" /></span>
+            <p>Roll the dice and a sound pops out here.</p>
+          </div>
+        </div>
+
+        <div class="stage-bottom">
+          <span class="badge stage-badge" style="--size:44px">
+            {
+              sounds.map((s) => (
+                <span class="s-icon" data-stage-icon={s.id}>
+                  <Glyph name={s.icon} />
+                </span>
+              ))
+            }
+            <span class="s-icon show" data-stage-icon="none"><Glyph name="dice-five" /></span>
+          </span>
+          <div class="stage-text">
+            <strong data-stage-title>Mystery sound</strong>
+            <span data-stage-sub>Every roll is a surprise</span>
+          </div>
+          <canvas class="wave" data-wave aria-hidden="true"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section.roll-section {
+    padding-bottom: clamp(32px, 4.5vw, 56px);
+  }
+
+  .roll-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 80px);
+  }
+
+  /* MARK: Dice */
+
+  .dice-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .big-dice {
+    --s: clamp(120px, 14vw, 168px);
+    position: relative;
+    width: calc(var(--s) * 2);
+    height: calc(var(--s) * 2.1);
+    display: grid;
+    place-items: center;
+    perspective: 900px;
+    border-radius: 32px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .big-dice:focus-visible {
+    outline-offset: -8px;
+  }
+
+  .dice-hop {
+    display: block;
+    transform-style: preserve-3d;
+    animation: dice-float 3.2s ease-in-out infinite;
+  }
+
+  .big-dice.is-rolling .dice-hop,
+  .big-dice.is-used .dice-hop {
+    animation: none;
+  }
+
+  @keyframes dice-float {
+    50% {
+      translate: 0 -10px;
+    }
+  }
+
+  .big-dice.nudge .dice-tilt {
+    animation: nudge-dice 0.7s var(--spring);
+  }
+
+  @keyframes nudge-dice {
+    30% {
+      rotate: -8deg;
+    }
+    60% {
+      rotate: 6deg;
+    }
+  }
+
+  .dice-tilt {
+    display: block;
+    transform-style: preserve-3d;
+    transform: rotateX(-24deg) rotateY(32deg);
+    transition: transform 0.6s var(--spring);
+  }
+
+  .big-dice:hover:not(.is-rolling) .dice-tilt {
+    transform: rotateX(-30deg) rotateY(40deg) scale(1.04);
+  }
+
+  .dice {
+    position: relative;
+    display: block;
+    width: var(--s);
+    height: var(--s);
+    transform-style: preserve-3d;
+  }
+
+  .face,
+  .core {
+    position: absolute;
+    inset: 0;
+    border-radius: 22%;
+  }
+
+  .face {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 16%;
+    gap: 4%;
+    background: linear-gradient(145deg, #fffaf0, #ffe39a 45%, #ffc247);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.5),
+      inset -6px -8px 18px rgb(194 120 20 / 0.35),
+      inset 6px 6px 14px rgb(255 255 255 / 0.6);
+    backface-visibility: hidden;
+  }
+
+  .face i {
+    border-radius: 50%;
+  }
+
+  .face i.on {
+    background: radial-gradient(circle at 40% 35%, #5a3a10, #241500 70%);
+    box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.5), 0 1px 0 rgb(255 255 255 / 0.6);
+  }
+
+  /* An inner cube so the rounded corners never show gaps */
+  .core {
+    background: #e7a83a;
+    border-radius: 12%;
+  }
+
+  .face-front { transform: translateZ(calc(var(--s) / 2)); }
+  .face-back { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+  .face-right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+  .face-left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+  .face-top { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+  .face-bottom { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+  .core-front { transform: translateZ(calc(var(--s) / 2 - 3px)); }
+  .core-back { transform: rotateY(180deg) translateZ(calc(var(--s) / 2 - 3px)); }
+  .core-right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2 - 3px)); }
+  .core-left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2 - 3px)); }
+  .core-top { transform: rotateX(90deg) translateZ(calc(var(--s) / 2 - 3px)); }
+  .core-bottom { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2 - 3px)); }
+
+  .dice-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    width: calc(var(--s) * 1.1);
+    height: calc(var(--s) * 0.18);
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(255 194 71 / 0.35), rgb(255 160 40 / 0.08) 60%, transparent);
+    pointer-events: none;
+  }
+
+  .dice-cta {
+    margin: 4px 0 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-2);
+    transition: opacity 0.3s;
+  }
+
+  .found {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .found-dots {
+    display: grid;
+    grid-template-columns: repeat(11, 10px);
+    gap: 7px;
+  }
+
+  .found-dots i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--fill-strong);
+    transition: background-color 0.3s, transform 0.5s var(--spring), box-shadow 0.3s;
+  }
+
+  .found-dots i.on {
+    background: var(--tint);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--tint) 60%, transparent);
+  }
+
+  .found-dots i.just {
+    transform: scale(1.8);
+  }
+
+  .found-text {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .found-text b {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* MARK: Stage */
+
+  .stage-card {
+    border-radius: var(--r-lg);
+    padding: 16px;
+    background: #0d0d0f;
+    box-shadow: 0 0 0 1px var(--stroke) inset, 0 40px 100px -40px color-mix(in srgb, var(--tint) 35%, transparent);
+    transition: box-shadow 0.6s;
+  }
+
+  .stage-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 32px;
+    padding: 0 4px 12px;
+  }
+
+  .chip {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--tint);
+    background: color-mix(in srgb, var(--tint) 14%, transparent);
+    transition: color 0.3s, background-color 0.3s;
+  }
+
+  .replay {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: rgb(255 255 255 / 0.06);
+    transition: color 0.2s, background-color 0.2s, transform 0.3s var(--spring);
+  }
+
+  .replay[hidden] {
+    display: none;
+  }
+
+  .replay:hover {
+    color: var(--text);
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .replay:active {
+    transform: scale(0.94);
+  }
+
+  .replay :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  .stage-area {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 20px;
+    overflow: hidden;
+    background:
+      radial-gradient(70% 70% at 50% 60%, color-mix(in srgb, var(--tint) 16%, transparent), transparent 70%),
+      #121215;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.05);
+    transition: background-color 0.4s;
+  }
+
+  .scene {
+    position: absolute;
+    inset: 0;
+    container-type: size;
+  }
+
+  .idle {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-3);
+    text-align: center;
+    transition: opacity 0.3s;
+  }
+
+  .idle p {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .idle-arrow {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.06);
+    animation: point-left 1.4s ease-in-out infinite;
+  }
+
+  .idle-arrow :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  @keyframes point-left {
+    50% {
+      translate: -6px 0;
+    }
+  }
+
+  @keyframes point-up {
+    50% {
+      translate: 0 -6px;
+    }
+  }
+
+  .idle.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .stage-bottom {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 6px 4px;
+  }
+
+  .s-icon {
+    display: none;
+    width: 58%;
+    height: 58%;
+  }
+
+  .s-icon.show {
+    display: grid;
+  }
+
+  .s-icon :global(svg) {
+    width: 100%;
+    height: 100%;
+    stroke-width: 2.3;
+  }
+
+  .stage-badge.pop {
+    animation: badge-pop 0.5s var(--spring);
+  }
+
+  @keyframes badge-pop {
+    from {
+      transform: scale(0.4);
+    }
+  }
+
+  .stage-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stage-text strong {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .stage-text span {
+    font-size: 13px;
+    color: var(--text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .wave {
+    flex: 1;
+    min-width: 80px;
+    height: 40px;
+  }
+
+  @media (max-width: 860px) {
+    .roll-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .big-dice {
+      --s: 116px;
+    }
+
+    /* The dice sits above the stage when stacked, so the arrow points up at it */
+    .idle-arrow {
+      animation-name: point-up;
+    }
+
+    .idle-arrow :global(svg) {
+      rotate: 90deg;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .wave {
+      display: none;
+    }
+  }
+</style>
+
+<!-- Styles for the scene elements, which are created by script. -->
+<style is:global>
+  .dice-stage > div {
+    position: absolute;
+  }
+
+  .dice-stage .sc-ring {
+    translate: -50% -50%;
+    border: 0.6cqw solid;
+    border-radius: 50%;
+  }
+
+  .dice-stage .sc-star {
+    width: 2.6cqw;
+    height: 2.6cqw;
+    translate: -50% -50%;
+    background: var(--tint);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  }
+
+  .dice-stage .sc-note {
+    translate: -50% -50%;
+    font-size: 6cqw;
+    font-weight: 700;
+    color: var(--tint);
+  }
+
+  /* Shop */
+  .dice-stage .sc-shop {
+    left: 50%;
+    top: 16%;
+    width: 54cqw;
+    height: 70%;
+    translate: -50% 0;
+  }
+
+  .dice-stage .sc-awning {
+    position: absolute;
+    left: -4%;
+    right: -4%;
+    top: 0;
+    height: 18%;
+    border-radius: 1.4cqw 1.4cqw 3cqw 3cqw;
+    background: repeating-linear-gradient(90deg, var(--tint) 0 12.5%, #fff6e3 12.5% 25%);
+    box-shadow: 0 1.4cqw 2cqw rgb(0 0 0 / 0.35);
+    z-index: 2;
+  }
+
+  .dice-stage .sc-roof {
+    position: absolute;
+    left: -8%;
+    right: -8%;
+    top: -18%;
+    height: 36%;
+    background: var(--tint);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    z-index: 2;
+  }
+
+  .dice-stage .sc-door {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 14%;
+    bottom: 0;
+    overflow: hidden;
+    border-radius: 0.8cqw 0.8cqw 0 0;
+    background: #1d1d21;
+    box-shadow: 0 0 0 0.8cqw #2c2c31;
+  }
+
+  .dice-stage .sc-inside {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(80% 90% at 50% 100%, #ffc247, #ff9a2e 50%, #3a2408);
+  }
+
+  .dice-stage .sc-open {
+    padding: 1cqw 2.6cqw;
+    border-radius: 1cqw;
+    font-family: var(--font-display);
+    font-size: 5cqw;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--rust);
+    background: #fff6e3;
+    box-shadow: 0 1cqw 2cqw rgb(0 0 0 / 0.3);
+  }
+
+  .dice-stage .sc-slats {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(180deg, #8a8a92 0, #9e9ea6 1.2cqw, #6a6a72 2.6cqw, #4c4c53 3cqw);
+  }
+
+  .dice-stage .sc-handle {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2.4cqw;
+    background: var(--rust);
+  }
+
+  /* Bell, moon */
+  .dice-stage .sc-rope {
+    left: 50%;
+    top: 0;
+    width: 0.6cqw;
+    height: 22%;
+    translate: -50% 0;
+    background: #555;
+  }
+
+  .dice-stage .sc-bell {
+    left: 50%;
+    top: 20%;
+    width: 22cqw;
+    height: 22cqw;
+    translate: -50% 0;
+    transform-origin: 50% 0;
+    border-radius: 50% 50% 14% 14% / 70% 70% 14% 14%;
+    background: linear-gradient(160deg, #fff3c4, var(--tint) 55%, #b77a12);
+    box-shadow: 0 2cqw 4cqw rgb(0 0 0 / 0.4);
+  }
+
+  .dice-stage .sc-clapper {
+    position: absolute;
+    left: 50%;
+    bottom: -3cqw;
+    width: 5cqw;
+    height: 5cqw;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: #8a5a10;
+  }
+
+  .dice-stage .sc-moon {
+    left: 46%;
+    top: 45%;
+    width: 22cqw;
+    height: 22cqw;
+    translate: -50% -50%;
+    border-radius: 50%;
+    box-shadow: inset 4cqw -2cqw 0 0 var(--tint);
+  }
+
+  .dice-stage .sc-twinkle {
+    width: 1.6cqw;
+    height: 1.6cqw;
+    background: #fff;
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  }
+
+  .dice-stage .sc-z {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 6cqw;
+    color: var(--tint);
+  }
+
+  /* Pops */
+  .dice-stage .sc-popper {
+    left: 50%;
+    top: 70%;
+    width: 12cqw;
+    height: 16cqw;
+    translate: -50% 0;
+    background: linear-gradient(90deg, var(--tint), #fff 50%, var(--tint));
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+  }
+
+  .dice-stage .sc-confetti {
+    width: 1.8cqw;
+    height: 1cqw;
+    border-radius: 0.3cqw;
+  }
+
+  .dice-stage .sc-streak {
+    left: 50%;
+    top: 20%;
+    width: 1cqw;
+    height: 48%;
+    translate: -50% 0;
+    transform-origin: 50% 100%;
+    border-radius: 1cqw;
+    background: linear-gradient(0deg, var(--tint), transparent);
+  }
+
+  .dice-stage .sc-bar {
+    bottom: 14%;
+    width: 10cqw;
+    translate: -50% 0;
+    border-radius: 1.4cqw;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 60%, #fff), var(--tint));
+  }
+
+  .dice-stage .sc-bigstar {
+    left: 50%;
+    top: 30%;
+    width: 18cqw;
+    height: 18cqw;
+    translate: -50% -50%;
+    background: linear-gradient(160deg, #fff6cc, #ffc247);
+    clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+
+  .dice-stage .sc-lap {
+    left: 50%;
+    top: 62%;
+    width: 40cqw;
+    translate: -50% 0;
+  }
+
+  .dice-stage .sc-lid,
+  .dice-stage .sc-base {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2.4cqw;
+    border-radius: 2cqw;
+    background: #f5f5f7;
+  }
+
+  .dice-stage .sc-lid {
+    top: -2.6cqw;
+    left: 4%;
+    width: 92%;
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, #f5f5f7, color-mix(in srgb, var(--tint) 50%, #fff));
+  }
+
+  .dice-stage .sc-pop {
+    left: 50%;
+    top: 58%;
+    width: 30cqw;
+    height: 30cqw;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--tint) 70%, transparent), transparent);
+  }
+
+  /* Bouncy */
+  .dice-stage .sc-spring {
+    left: 50%;
+    bottom: 12%;
+    width: 12cqw;
+    height: 16cqw;
+    translate: -50% 0;
+    transform-origin: 50% 100%;
+    background: repeating-linear-gradient(170deg, transparent 0 1.4cqw, #c9c9d0 1.4cqw 2.4cqw);
+  }
+
+  .dice-stage .sc-ball {
+    left: 50%;
+    bottom: calc(12% + 16cqw);
+    width: 14cqw;
+    height: 14cqw;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--tint) 45%, color-mix(in srgb, var(--tint) 60%, #000));
+  }
+
+  .dice-stage .sc-duck {
+    left: 44%;
+    top: 34%;
+    width: 30cqw;
+    height: 26cqw;
+    translate: -50% 0;
+    transform-origin: 50% 100%;
+  }
+
+  .dice-stage .sc-duck > div {
+    position: absolute;
+  }
+
+  .dice-stage .sc-duck-body {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 62%;
+    border-radius: 50% 50% 46% 46%;
+    background: radial-gradient(circle at 40% 30%, #fff6b0, #ffd23f 60%, #e0a800);
+  }
+
+  .dice-stage .sc-duck-head {
+    right: 6%;
+    top: 0;
+    width: 44%;
+    height: 54%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 30%, #fff6b0, #ffd23f 60%, #e0a800);
+  }
+
+  .dice-stage .sc-duck-eye {
+    position: absolute;
+    left: 56%;
+    top: 34%;
+    width: 14%;
+    height: 16%;
+    border-radius: 50%;
+    background: #1a1a1a;
+  }
+
+  .dice-stage .sc-duck-beak {
+    position: absolute;
+    right: -26%;
+    top: 46%;
+    width: 36%;
+    height: 22%;
+    border-radius: 50% 60% 60% 40%;
+    background: #ff8a3d;
+  }
+
+  .dice-stage .sc-duck-wing {
+    left: 14%;
+    top: 46%;
+    width: 36%;
+    height: 30%;
+    transform-origin: 80% 30%;
+    border-radius: 60% 40% 60% 40%;
+    background: #f2b800;
+  }
+
+  .dice-stage .sc-bubble-text {
+    translate: -50% -50%;
+    padding: 0.8cqw 2cqw;
+    border-radius: 2cqw;
+    font-size: 3.4cqw;
+    font-weight: 800;
+    color: #2b1d00;
+    background: #fff;
+  }
+
+  /* Water */
+  .dice-stage .sc-bub {
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 0.5cqw solid color-mix(in srgb, var(--tint) 80%, #fff);
+    background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.6), color-mix(in srgb, var(--tint) 20%, transparent) 40%, transparent 70%);
+  }
+
+  .dice-stage .sc-bub.is-big {
+    width: 16cqw;
+    height: 16cqw;
+  }
+
+  .dice-stage .sc-stream {
+    left: 0;
+    right: 0;
+    height: 8cqw;
+    background: radial-gradient(ellipse 5cqw 2cqw at 5cqw 100%, transparent 98%, var(--tint) 100%) 0 0 / 10cqw 100% repeat-x;
+    -webkit-mask: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+    mask: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+  }
+
+  .dice-stage .sc-drop {
+    left: 50%;
+    top: 52%;
+    width: 7cqw;
+    height: 9cqw;
+    translate: -50% -50%;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: radial-gradient(circle at 40% 35%, #fff, var(--tint) 60%);
+  }
+
+  .dice-stage .sc-drop.is-small {
+    width: 3cqw;
+    height: 3.6cqw;
+  }
+
+  .dice-stage .sc-pool {
+    left: 50%;
+    top: 66%;
+    width: 40cqw;
+    height: 6cqw;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--tint) 40%, transparent), transparent);
+  }
+
+  .dice-stage .sc-wave {
+    left: -10%;
+    right: -10%;
+    height: 34%;
+    transform-origin: 50% 100%;
+    background:
+      radial-gradient(ellipse 10cqw 6cqw at 10cqw 0, transparent 98%, color-mix(in srgb, var(--tint) 85%, #0b3b2c) 100%) 0 0 / 20cqw 100% repeat-x;
+  }
+
+  .dice-stage .sc-spray {
+    width: 1.8cqw;
+    height: 1.8cqw;
+    border-radius: 50%;
+    background: #e9fff5;
+  }
+
+  /* Weather */
+  .dice-stage .sc-cloud {
+    left: 50%;
+    top: 10%;
+    width: 46cqw;
+    height: 14cqw;
+    translate: -50% 0;
+    border-radius: 8cqw;
+    background: #4a4a55;
+    box-shadow: -10cqw -3cqw 0 -2cqw #4a4a55, 8cqw -5cqw 0 -1cqw #55555f;
+    z-index: 3;
+  }
+
+  .dice-stage .sc-rain {
+    top: 22%;
+    width: 0.5cqw;
+    height: 3.6cqw;
+    border-radius: 1cqw;
+    background: color-mix(in srgb, var(--tint) 70%, #fff);
+  }
+
+  .dice-stage .sc-bolt {
+    left: 52%;
+    top: 22%;
+    width: 12cqw;
+    height: 30cqw;
+    translate: -50% 0;
+    transform-origin: 50% 0;
+    background: #ffe26b;
+    clip-path: polygon(40% 0, 75% 0, 55% 40%, 85% 40%, 30% 100%, 45% 55%, 15% 55%);
+    filter: drop-shadow(0 0 2cqw #ffe26b);
+    opacity: 0;
+    z-index: 2;
+  }
+
+  .dice-stage .sc-flash {
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+  }
+
+  .dice-stage .sc-wire {
+    left: 10%;
+    right: 10%;
+    top: calc(46% + 9cqw);
+    height: 0.4cqw;
+    background: #555;
+  }
+
+  .dice-stage .sc-bird {
+    width: 11cqw;
+    height: 9cqw;
+    translate: -50% 0;
+    border-radius: 55% 55% 45% 45%;
+    background: radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--tint) 40%, #fff), var(--tint) 70%);
+  }
+
+  .dice-stage .sc-bird-eye {
+    position: absolute;
+    right: 24%;
+    top: 30%;
+    width: 1.4cqw;
+    height: 1.4cqw;
+    border-radius: 50%;
+    background: #111;
+  }
+
+  .dice-stage .sc-bird-beak {
+    position: absolute;
+    right: -1.6cqw;
+    top: 40%;
+    width: 2.4cqw;
+    height: 1.6cqw;
+    background: #ff9a3d;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+
+  .dice-stage .sc-chirp {
+    width: 4cqw;
+    height: 4cqw;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 0.5cqw solid var(--tint);
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    rotate: 45deg;
+  }
+
+  .dice-stage .sc-sun {
+    left: 50%;
+    top: 20%;
+    width: 22cqw;
+    height: 22cqw;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff6cc, #ffc247 60%, transparent 72%);
+  }
+
+  .dice-stage .sc-pine {
+    bottom: 0;
+    width: 16cqw;
+    height: 30cqw;
+    background: color-mix(in srgb, var(--tint) 70%, #04342c);
+    clip-path: polygon(50% 0, 80% 35%, 66% 35%, 92% 70%, 72% 70%, 100% 100%, 0 100%, 28% 70%, 8% 70%, 34% 35%, 20% 35%);
+  }
+
+  /* Vehicles */
+  .dice-stage .sc-road {
+    left: 0;
+    right: 0;
+    top: 72%;
+    height: 0.6cqw;
+    background: repeating-linear-gradient(90deg, #444 0 6cqw, transparent 6cqw 10cqw);
+  }
+
+  .dice-stage .sc-car {
+    left: 22%;
+    top: calc(72% - 12cqw);
+    width: 34cqw;
+    height: 10cqw;
+    border-radius: 4cqw 6cqw 2cqw 2cqw;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 70%, #fff), var(--tint));
+    z-index: 2;
+  }
+
+  .dice-stage .sc-cabin {
+    position: absolute;
+    left: 26%;
+    top: -4.6cqw;
+    width: 44%;
+    height: 5cqw;
+    border-radius: 3cqw 4cqw 0 0;
+    background: linear-gradient(180deg, #cfe8ff, #7aa0c0);
+  }
+
+  .dice-stage .sc-wheel {
+    position: absolute;
+    bottom: -3cqw;
+    width: 7cqw;
+    height: 7cqw;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ddd 0 22%, #222 24% 100%);
+    border: 0.6cqw dashed #555;
+  }
+
+  .dice-stage .sc-wheel.is-back {
+    left: 12%;
+  }
+
+  .dice-stage .sc-wheel.is-front {
+    right: 12%;
+  }
+
+  .dice-stage .sc-speed {
+    left: 4%;
+    width: 18cqw;
+    height: 0.6cqw;
+    transform-origin: 100% 50%;
+    border-radius: 1cqw;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.6));
+  }
+
+  .dice-stage .sc-beep {
+    right: 8%;
+    padding: 1cqw 2.4cqw;
+    border-radius: 2cqw;
+    font-size: 3.6cqw;
+    font-weight: 800;
+    color: #2b1d00;
+    background: #fff;
+  }
+
+  .dice-stage .sc-jet {
+    left: 50%;
+    top: 46%;
+    width: 18cqw;
+    height: 8cqw;
+    translate: -50% -50%;
+    rotate: -14deg;
+    z-index: 2;
+  }
+
+  .dice-stage .sc-jet-body {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #f5f5f7, #b9b9c2);
+    clip-path: polygon(0 50%, 30% 38%, 45% 0, 55% 0, 58% 38%, 100% 46%, 100% 54%, 58% 62%, 55% 100%, 45% 100%, 30% 62%);
+  }
+
+  .dice-stage .sc-jet-tail {
+    position: absolute;
+    right: 92%;
+    top: 50%;
+    width: 50cqw;
+    height: 1.2cqw;
+    translate: 0 -50%;
+    transform-origin: 100% 50%;
+    border-radius: 1cqw;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--tint) 70%, #fff));
+  }
+
+  /* Zips */
+  .dice-stage .sc-zip {
+    left: 12%;
+    right: 12%;
+    top: 50%;
+    height: 8cqw;
+    translate: 0 -50%;
+    background: repeating-linear-gradient(90deg, #c9c9d0 0 1.2cqw, transparent 1.2cqw 2.4cqw) 0 0 / 100% 40% no-repeat,
+      repeating-linear-gradient(90deg, transparent 0 1.2cqw, #c9c9d0 1.2cqw 2.4cqw) 0 100% / 100% 40% no-repeat;
+  }
+
+  .dice-stage .sc-zip-gap {
+    position: absolute;
+    inset: 30% 0;
+    border-radius: 2cqw;
+    background: linear-gradient(90deg, var(--tint), color-mix(in srgb, var(--tint) 50%, #fff));
+    box-shadow: 0 0 4cqw var(--tint);
+  }
+
+  .dice-stage .sc-zip-slider {
+    position: absolute;
+    top: 50%;
+    width: 6cqw;
+    height: 10cqw;
+    translate: -50% -50%;
+    border-radius: 1.4cqw;
+    background: linear-gradient(180deg, #f5f5f7, #9a9aa3);
+    box-shadow: 0 1cqw 2cqw rgb(0 0 0 / 0.4);
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { play, onPlay, samplesFor } from '../scripts/audio';
+  import { scenes } from '../scripts/scenes';
+  import { openGroups, closeGroup, type SoundId } from '../data/sounds';
+  import { sparkle, tintColor } from '../scripts/sparkle';
+
+  const groups = [...openGroups, closeGroup];
+  const info = new Map(
+    groups.flatMap((g) => g.sounds.map((s) => [s.id, { ...s, tint: g.tint, group: g.id === 'close' ? 'Lid closes' : g.title }] as const)),
+  );
+  const ids = [...info.keys()];
+
+  const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
+  const diceButton = $<HTMLButtonElement>('[data-big-dice]');
+  const cube = $<HTMLElement>('[data-dice-cube]');
+  const hop = $<HTMLElement>('[data-dice-hop]');
+  const shadow = $<HTMLElement>('[data-dice-shadow]');
+  const card = $<HTMLElement>('[data-stage-card]');
+  const scene = $<HTMLElement>('[data-scene]');
+  const idle = $<HTMLElement>('[data-idle]');
+  const chip = $<HTMLElement>('[data-chip]');
+  const replay = $<HTMLButtonElement>('[data-replay]');
+  const title = $<HTMLElement>('[data-stage-title]');
+  const sub = $<HTMLElement>('[data-stage-sub]');
+  const badge = $<HTMLElement>('.stage-badge');
+  const wave = $<HTMLCanvasElement>('[data-wave]');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // MARK: Collection ("Found 5 of 22")
+
+  const FOUND_KEY = 'lidshutter.found';
+  let found = new Set<string>();
+  try {
+    found = new Set(JSON.parse(localStorage.getItem(FOUND_KEY) ?? '[]'));
+  } catch {
+    /* storage unavailable */
+  }
+
+  function renderFound(justFound?: string) {
+    document.querySelectorAll<HTMLElement>('[data-dot]').forEach((d) => {
+      d.classList.toggle('on', found.has(d.dataset.dot!));
+      if (d.dataset.dot === justFound) {
+        d.classList.add('just');
+        setTimeout(() => d.classList.remove('just'), 400);
+      }
+    });
+    const text = $<HTMLElement>('[data-found-text]');
+    text.innerHTML =
+      found.size === ids.length
+        ? `You heard all <b>${ids.length}</b>! Roll again for a new round`
+        : `Found <b data-found>${found.size}</b> of ${ids.length} sounds`;
+  }
+
+  function saveFound() {
+    try {
+      localStorage.setItem(FOUND_KEY, JSON.stringify([...found]));
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
+  /** All 22 heard: clear the dots one by one and start a fresh round. */
+  function newRound() {
+    found.clear();
+    saveFound();
+    const dots = [...document.querySelectorAll<HTMLElement>('[data-dot]')];
+    if (reduceMotion) {
+      renderFound();
+      return;
+    }
+    dots.forEach((d, i) => setTimeout(() => d.classList.remove('on'), i * 25));
+    setTimeout(renderFound, dots.length * 25);
+  }
+  renderFound();
+
+  /**
+   * Every sound plays exactly once per round, in a random order. After all of them,
+   * a new round starts, and its first sound is never the one that just played.
+   */
+  function nextSound(): SoundId {
+    if (found.size >= ids.length) newRound();
+    const pool = ids.filter((id) => !found.has(id) && id !== current);
+    return pool[Math.floor(Math.random() * pool.length)] as SoundId;
+  }
+
+  // MARK: Dice
+
+  // Rotation that brings each face to the front.
+  const faceRotation: Record<number, [number, number]> = { 1: [0, 0], 6: [0, 180], 3: [0, -90], 4: [0, 90], 2: [-90, 0], 5: [90, 0] };
+  let rx = 0;
+  let ry = 0;
+  let rolling = false;
+  let current: SoundId | null = null;
+
+  function roll(): Promise<void> {
+    const face = 1 + Math.floor(Math.random() * 6);
+    const [fx, fy] = faceRotation[face];
+    // Always spin forward by two to three full turns, ending on the chosen face.
+    rx = Math.ceil(rx / 360) * 360 + 720 + fx;
+    ry = Math.ceil(ry / 360) * 360 + 360 * (1 + Math.round(Math.random())) + fy;
+    if (reduceMotion) {
+      gsap.set(cube, { rotationX: rx, rotationY: ry });
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      gsap
+        .timeline({ onComplete: resolve })
+        .to(cube, { rotationX: rx, rotationY: ry, duration: 0.95, ease: 'power3.out' }, 0)
+        .to(hop, { y: -110, duration: 0.32, ease: 'power2.out' }, 0)
+        .to(hop, { y: 0, duration: 0.5, ease: 'bounce.out' }, 0.32)
+        .to(shadow, { scale: 0.5, opacity: 0.4, duration: 0.32, ease: 'power2.out' }, 0)
+        .to(shadow, { scale: 1, opacity: 1, duration: 0.5, ease: 'bounce.out' }, 0.32)
+        // A little squash as it lands.
+        .to(hop, { scaleY: 0.9, scaleX: 1.06, duration: 0.07, yoyo: true, repeat: 1, ease: 'power1.out' }, 0.5);
+    });
+  }
+
+  // MARK: Stage
+
+  let sceneTl: gsap.core.Timeline | null = null;
+  let waveTween: gsap.core.Tween | null = null;
+  let peaks: number[] = [];
+
+  function drawWave(progress: number, tint: string) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const { width, height } = wave.getBoundingClientRect();
+    if (!width) return;
+    if (wave.width !== Math.round(width * dpr)) {
+      wave.width = Math.round(width * dpr);
+      wave.height = Math.round(height * dpr);
+    }
+    const ctx = wave.getContext('2d')!;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    const step = width / peaks.length;
+    peaks.forEach((p, i) => {
+      const h = Math.max(2, p * height * 0.92);
+      ctx.fillStyle = i / peaks.length <= progress ? tint : 'rgba(255,255,255,0.16)';
+      ctx.beginPath();
+      ctx.roundRect(i * step, (height - h) / 2, Math.max(1.5, step - 1.5), h, 1.5);
+      ctx.fill();
+    });
+  }
+
+  function computePeaks(samples: Float32Array) {
+    const bars = Math.max(30, Math.floor(wave.getBoundingClientRect().width / 4));
+    const size = Math.floor(samples.length / bars);
+    peaks = Array.from({ length: bars }, (_, i) => {
+      let peak = 0;
+      for (let j = i * size; j < (i + 1) * size; j++) peak = Math.max(peak, Math.abs(samples[j]));
+      return peak;
+    });
+  }
+
+  /** The sound's icon flies out of the dice and into the stage. */
+  function flyOut(id: SoundId, tint: string) {
+    if (reduceMotion) return;
+    const from = hop.getBoundingClientRect();
+    const to = scene.getBoundingClientRect();
+    const source = badge.querySelector<HTMLElement>(`[data-stage-icon="${id}"] svg`);
+    const flyer = document.createElement('div');
+    flyer.className = 'badge';
+    flyer.innerHTML = source?.outerHTML ?? '';
+    Object.assign(flyer.style, {
+      position: 'fixed',
+      left: `${from.left + from.width / 2 - 28}px`,
+      top: `${from.top + from.height / 2 - 28}px`,
+      zIndex: '40',
+      pointerEvents: 'none',
+      ['--size' as string]: '56px',
+      ['--tint' as string]: tint,
+      background: tint,
+      color: '#1a1100',
+      boxShadow: `0 10px 40px -6px ${tint}`,
+    });
+    document.body.appendChild(flyer);
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    gsap
+      .timeline({ onComplete: () => flyer.remove() })
+      .fromTo(flyer, { scale: 0.3, rotate: -30 }, { scale: 1.15, rotate: 0, duration: 0.18, ease: 'back.out(3)' })
+      .to(flyer, { keyframes: { x: [0, dx * 0.5, dx], y: [0, dy - 90, dy], ease: 'none' }, duration: 0.42, ease: 'power2.inOut' }, 0.05)
+      .to(flyer, { scale: 1.8, opacity: 0, duration: 0.2, ease: 'power2.out' }, 0.45);
+  }
+
+  function show(id: SoundId, { fly = true } = {}) {
+    const s = info.get(id)!;
+    current = id;
+    card.dataset.tint = s.tint;
+    const tint = tintColor(card);
+
+    // Header and caption.
+    chip.textContent = s.group;
+    title.textContent = s.title;
+    sub.textContent = s.subtitle;
+    replay.hidden = false;
+    idle.classList.add('is-hidden');
+    badge.querySelectorAll<HTMLElement>('[data-stage-icon]').forEach((i) => i.classList.toggle('show', i.dataset.stageIcon === id));
+    badge.classList.remove('pop');
+    void badge.offsetWidth;
+    badge.classList.add('pop');
+
+    // Sound first, so everything can be timed to when it's actually heard.
+    const delay = play(id);
+    if (fly) flyOut(id, tint);
+
+    sceneTl?.kill();
+    waveTween?.kill();
+    gsap.set(scene, { clearProps: 'transform' });
+    scene.replaceChildren();
+    sceneTl = scenes[id](scene);
+
+    const samples = samplesFor(id);
+    const duration = samples.length / 44_100;
+    computePeaks(samples);
+    const progress = { p: 0 };
+    drawWave(0, tint);
+
+    if (reduceMotion) {
+      sceneTl.progress(1);
+      drawWave(1, tint);
+      return;
+    }
+    gsap.delayedCall(delay, () => sceneTl?.play(0));
+    waveTween = gsap.to(progress, {
+      p: 1,
+      duration,
+      delay,
+      ease: 'none',
+      onUpdate: () => drawWave(progress.p, tint),
+    });
+  }
+
+  async function rollAndShow() {
+    if (rolling) return;
+    rolling = true;
+    diceButton.classList.add('is-rolling', 'is-used');
+    $('[data-dice-cta]').style.opacity = '0';
+    const id = nextSound();
+    await roll();
+    diceButton.classList.remove('is-rolling');
+    sparkle(hop, '#ffc247', 1);
+    found.add(id);
+    saveFound();
+    renderFound(id);
+    if (found.size === ids.length) sparkle($('[data-found-text]'), '#61d999', 1.2);
+    show(id);
+    rolling = false;
+  }
+
+  diceButton.addEventListener('click', rollAndShow);
+  replay.addEventListener('click', () => current && show(current, { fly: false }));
+
+  // Until the first roll, give the dice a little nudge now and then.
+  const nudge = setInterval(() => {
+    if (diceButton.classList.contains('is-used')) return clearInterval(nudge);
+    diceButton.classList.remove('nudge');
+    void diceButton.offsetWidth;
+    diceButton.classList.add('nudge');
+  }, 3500);
+
+  // If another part of the page plays a sound, stop this stage's show.
+  onPlay((id) => {
+    if (id !== current) {
+      sceneTl?.pause();
+      waveTween?.kill();
+    }
+  });
+</script>

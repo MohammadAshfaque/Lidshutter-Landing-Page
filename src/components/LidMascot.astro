@@ -1,0 +1,164 @@
+---
+// Lid, the LidShutter mascot: the app icon come alive. A white lid and base with a
+// little face, gold light spilling out when the lid lifts, and the icon's rust "clacks".
+---
+
+<button type="button" class="lid-mascot" data-puff aria-label="Lid, the LidShutter mascot. Click to bother Lid.">
+  <svg viewBox="0 0 220 120" aria-hidden="true">
+    <defs>
+      <linearGradient id="lm-glow" x1="0" y1="1" x2="0.6" y2="0">
+        <stop offset="0" stop-color="#ffc247" stop-opacity="0.85" />
+        <stop offset="1" stop-color="#ffc247" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+
+    <ellipse cx="104" cy="114" rx="86" ry="4" fill="rgb(255 194 71 / 0.2)" />
+
+    <g class="lm-body">
+      <!-- Light spilling from under the lid -->
+      <polygon class="lm-glow" points="36,86 172,86 160,26" fill="url(#lm-glow)" />
+
+      <!-- Lid, hinged at the left end of the base -->
+      <g class="lm-lid">
+        <rect class="lm-white" x="26" y="74" width="150" height="14" rx="7" />
+        <rect class="lm-strip" x="38" y="86" width="126" height="3.5" rx="1.75" />
+      </g>
+
+      <!-- Base, with the face on its front -->
+      <rect class="lm-white" x="18" y="88" width="170" height="24" rx="12" />
+
+      <g class="lm-cheeks">
+        <circle cx="86" cy="102" r="4.5" />
+        <circle cx="132" cy="102" r="4.5" />
+      </g>
+      <g class="lm-line lm-eyes-sleepy">
+        <path d="M94 98 q 4 3.5 8 0" />
+        <path d="M116 98 q 4 3.5 8 0" />
+      </g>
+      <g class="lm-line lm-eyes-happy">
+        <path d="M94 100 q 4 -6 8 0" />
+        <path d="M116 100 q 4 -6 8 0" />
+      </g>
+      <g class="lm-eyes-angry">
+        <ellipse cx="98" cy="100" rx="2.6" ry="3" />
+        <ellipse cx="120" cy="100" rx="2.6" ry="3" />
+        <path class="lm-brow" d="M91 93 L 103 96.5" />
+        <path class="lm-brow" d="M127 93 L 115 96.5" />
+      </g>
+      <path class="lm-line lm-mouth-happy" d="M104 104 q 5 5 10 0" />
+      <path class="lm-line lm-mouth-angry" d="M104 107 q 5 -4 10 0" />
+
+      <!-- Little feet -->
+      <ellipse class="lm-foot" cx="44" cy="113" rx="9" ry="4" />
+      <ellipse class="lm-foot" cx="162" cy="113" rx="9" ry="4" />
+    </g>
+
+    <!-- The icon's rust "clack" lines -->
+    <g class="lm-clacks">
+      <path d="M174 12 l 8 -9" />
+      <path d="M180 26 l 12 -3" />
+    </g>
+
+    <!-- Angry bits -->
+    <g class="lm-anger">
+      <path d="M150 40 Q 159 44 155 33" />
+      <path d="M174 40 Q 165 44 169 33" />
+      <path d="M150 52 Q 159 48 155 59" />
+      <path d="M174 52 Q 165 48 169 59" />
+    </g>
+    <g class="lm-steam">
+      <circle cx="70" cy="70" r="5" />
+      <circle cx="60" cy="60" r="3.5" />
+    </g>
+  </svg>
+</button>
+
+<style>
+  .lid-mascot {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .lm-white {
+    fill: #ffffff;
+    stroke: #1d1d1f;
+    stroke-width: 2.4;
+  }
+
+  .lm-strip {
+    fill: var(--gold);
+  }
+
+  .lm-line path,
+  path.lm-line {
+    fill: none;
+    stroke: #1a1a1a;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+  }
+
+  .lm-cheeks circle {
+    fill: #ffb3d1;
+    transition: fill 0.2s;
+  }
+
+  .lid-mascot.is-angry .lm-cheeks circle {
+    fill: #ff7a7a;
+  }
+
+  .lm-eyes-angry ellipse {
+    fill: #1a1a1a;
+  }
+
+  .lm-brow {
+    stroke: #1a1a1a;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .lm-foot {
+    fill: #ffffff;
+    stroke: #1d1d1f;
+    stroke-width: 2.2;
+  }
+
+  .lm-clacks path {
+    fill: none;
+    stroke: var(--rust);
+    stroke-width: 5;
+    stroke-linecap: round;
+  }
+
+  .lm-anger path {
+    fill: none;
+    stroke: #ff5a5a;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .lm-steam circle {
+    fill: #fff;
+    stroke: #1d1d1f;
+    stroke-width: 1.8;
+  }
+
+  /* Starting state: lid closed, dozing */
+  .lm-eyes-happy,
+  .lm-eyes-angry,
+  .lm-mouth-angry,
+  .lm-glow,
+  .lm-strip,
+  .lm-clacks,
+  .lm-anger,
+  .lm-steam {
+    opacity: 0;
+  }
+</style>

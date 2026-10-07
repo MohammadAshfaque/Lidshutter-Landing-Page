@@ -1,0 +1,19 @@
+---
+// Filled icons (Phosphor), the closest match to the app's SF Symbols.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  name: string;
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+const file = join(process.cwd(), 'node_modules/@phosphor-icons/core/assets/fill', `${name}-fill.svg`);
+const svg = readFileSync(file, 'utf8').replace(
+  '<svg',
+  `<svg aria-hidden="true" focusable="false"${className ? ` class="${className}"` : ''}`,
+);
+---
+
+<Fragment set:html={svg} />

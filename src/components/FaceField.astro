@@ -1,0 +1,499 @@
+---
+// The shop crew: little flat characters from LidShutter's world (a laptop, the shutter,
+// the shop bell, a speaker...) floating around a section. They blink, pull faces now and
+// then, jump when a sound plays, and each one plays its own sound when clicked.
+import type { SoundId } from '../data/sounds';
+
+interface Props {
+  variant: 'hero' | 'pricing';
+}
+
+const { variant } = Astro.props;
+
+type Mood = 'idle' | 'happy' | 'wow' | 'sleep' | 'wink' | 'cool';
+type Kind = 'laptop' | 'shutter' | 'bell' | 'speaker' | 'tag' | 'note' | 'sign' | 'pebble' | 'burst' | 'app';
+type Bit = 'spark' | 'dot' | 'ring' | 'heart' | 'bolt' | 'tune' | 'dash';
+
+interface Char {
+  kind: Kind;
+  /** Position (% of the field), size in px and resting tilt. */
+  at: [number, number];
+  size: number;
+  tilt?: number;
+  /** Where it sits on phones; left out, it stays hidden there. */
+  phone?: [number, number];
+  mood?: Mood;
+}
+
+interface Confetti {
+  bit: Bit;
+  at: [number, number];
+  size: number;
+  color: string;
+  tilt?: number;
+  phone?: [number, number];
+}
+
+// MARK: - Faces
+
+const INK = '#1e1e1e';
+
+/** A face centred on (x, y). Every expression is drawn; CSS shows the one for the current mood. */
+function face(x: number, y: number, k = 1, ink = INK) {
+  return `<g class="face" transform="translate(${x} ${y}) scale(${k})" fill="${ink}" stroke="${ink}">
+    <g class="e e-open" stroke="none"><circle cx="-5" cy="0" r="2.3"/><circle cx="5" cy="0" r="2.3"/></g>
+    <g class="e e-happy" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M-7.4 1.2q2.4-3.6 4.8 0M2.6 1.2q2.4-3.6 4.8 0"/></g>
+    <g class="e e-shut" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M-7.4 .4h4.8M2.6 .4h4.8"/></g>
+    <g class="e e-wink" stroke-linecap="round"><circle cx="-5" cy="0" r="2.3" stroke="none"/><path d="M2.6 1.2q2.4-3.6 4.8 0" fill="none" stroke-width="2.2"/></g>
+    <g class="e e-cool" stroke="none"><rect x="-10.5" y="-3.4" width="9" height="6.2" rx="3"/><rect x="1.5" y="-3.4" width="9" height="6.2" rx="3"/><rect x="-2" y="-1.6" width="4" height="1.6"/></g>
+    <path class="m m-smile" d="M-3.6 5.2q3.6 3.4 7.2 0" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+    <ellipse class="m m-o" cx="0" cy="6.4" rx="2.1" ry="2.6" stroke="none"/>
+    <path class="m m-flat" d="M-2.6 6.2h5.2" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+    <g class="zzz" stroke="none" font-size="7" font-weight="800" font-family="system-ui, sans-serif"><text x="9" y="-6">z</text><text x="14" y="-12" font-size="5">z</text></g>
+  </g>`;
+}
+
+// MARK: - Characters (48 × 48 each)
+
+const bodies: Record<Kind, string> = {
+  laptop: `<rect x="8" y="7" width="32" height="25" rx="4.5" fill="#2b2b30"/>
+    <rect x="11" y="10" width="26" height="19" rx="2.4" fill="#ffc247"/>
+    <path d="M3 34h42l-2.6 4.4a3 3 0 0 1-2.6 1.6H8.2a3 3 0 0 1-2.6-1.6z" fill="#d3d4d9"/>
+    ${face(24, 18.6, 0.72)}`,
+  shutter: `<rect x="6" y="6" width="36" height="36" rx="10" fill="#ff8a3d"/>
+    <path d="M6 14.5h36M6 20h36" stroke="#e5651c" stroke-width="2.2"/>
+    ${face(24, 30, 0.9)}`,
+  bell: `<circle cx="24" cy="10" r="3.2" fill="#d79a1c"/>
+    <path d="M8.5 35C8.5 19 15 12.4 24 12.4S39.5 19 39.5 35z" fill="#ffc247"/>
+    <rect x="4" y="34" width="40" height="6.5" rx="3.25" fill="#3a3a42"/>
+    ${face(24, 25, 0.9)}`,
+  speaker: `<path class="wave" d="M38.5 18.5q3.6 5.5 0 11" fill="none" stroke="#6aa8ff" stroke-width="2.8" stroke-linecap="round"/>
+    <path class="wave w2" d="M42.6 14.2q6.4 9.8 0 19.6" fill="none" stroke="#6aa8ff" stroke-width="2.8" stroke-linecap="round"/>
+    <rect x="3" y="10" width="32" height="28" rx="14" fill="#6aa8ff"/>
+    ${face(19, 23.5, 0.95)}`,
+  tag: `<path d="M5 17.5 15.4 8.6A4 4 0 0 1 18 7.6h20a4 4 0 0 1 4 4v24.8a4 4 0 0 1-4 4H18a4 4 0 0 1-2.6-1L5 30.5a4.2 4.2 0 0 1 0-6.5z" fill="#4fd18b"/>
+    <circle cx="13" cy="24" r="2.6" fill="#fff"/>
+    ${face(29.5, 23, 0.9)}`,
+  note: `<rect x="28.5" y="5" width="4.4" height="28" rx="2.2" fill="#9b7bff"/>
+    <path d="M31.5 5.2c6 .6 10 4.6 10.2 10.4-2.8-3-6.2-4.2-10.2-4.4z" fill="#9b7bff"/>
+    <ellipse cx="20" cy="33" rx="13.5" ry="10.5" fill="#9b7bff"/>
+    ${face(20, 32, 0.78)}`,
+  sign: `<path d="M13 15 24 5.5 35 15" fill="none" stroke="#3a3a42" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="24" cy="5.5" r="2" fill="#3a3a42"/>
+    <rect x="4" y="14" width="40" height="26" rx="8" fill="#ff7eb6"/>
+    ${face(24, 26.5, 0.92)}`,
+  pebble: `<path d="M7 30.5C5 18.6 15.4 10.4 26 11c11.4.6 17.6 9.6 14.6 20-2.8 9.6-29.4 10.8-33.6-.5z" fill="#c9cad0"/>
+    ${face(24, 25, 0.9)}`,
+  burst: `<g fill="#ffa53a">${Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2;
+    return `<circle cx="${(24 + Math.cos(a) * 12).toFixed(2)}" cy="${(24 + Math.sin(a) * 12).toFixed(2)}" r="8"/>`;
+  }).join('')}<circle cx="24" cy="24" r="13"/></g>
+    ${face(24, 24, 0.9)}`,
+  app: `<rect x="5" y="5" width="38" height="38" rx="11" fill="#1d1d1f"/>
+    <path d="M14.5 35.5h17" stroke="#ffc247" stroke-width="2.6" stroke-linecap="round"/>
+    ${face(24, 22.5, 0.95, '#ffffff')}`,
+};
+
+/** What each character plays when you click it. `open` is the visitor's chosen open sound. */
+const voices: Record<Kind, SoundId | 'open' | 'random'> = {
+  laptop: 'open',
+  shutter: 'rollingShutter',
+  bell: 'shopBell',
+  speaker: 'random',
+  tag: 'zipOpen',
+  note: 'tada',
+  sign: 'popOpen',
+  pebble: 'goodnight',
+  burst: 'boingUp',
+  app: 'quickShutter',
+};
+
+// MARK: - Confetti
+
+const bits: Record<Bit, (c: string) => string> = {
+  spark: (c) => `<path d="M12 1.5c.9 5.6 4.9 9.6 10.5 10.5-5.6.9-9.6 4.9-10.5 10.5C11.1 16.9 7.1 12.9 1.5 12 7.1 11.1 11.1 7.1 12 1.5z" fill="${c}"/>`,
+  dot: (c) => `<circle cx="12" cy="12" r="9" fill="${c}"/>`,
+  ring: (c) => `<circle cx="12" cy="12" r="7.5" fill="none" stroke="${c}" stroke-width="4" stroke-dasharray="36 12" stroke-linecap="round"/>`,
+  heart: (c) => `<path d="M12 21C5 16 2 12.4 2 8.6 2 5.5 4.5 3 7.5 3c1.9 0 3.5 1 4.5 2.5C13 4 14.6 3 16.5 3 19.5 3 22 5.5 22 8.6c0 3.8-3 7.4-10 12.4z" fill="${c}"/>`,
+  bolt: (c) => `<path d="M13.5 1.5 4 13.5h7l-1.5 9 9.5-12h-7z" fill="${c}"/>`,
+  tune: (c) => `<path d="M9 3.5v12.2A4.2 4.2 0 1 0 11.6 19V8.4l8-1.8v7A4.2 4.2 0 1 0 22 17.4V1.6z" fill="${c}"/>`,
+  dash: (c) => `<rect x="2" y="9" width="20" height="6" rx="3" fill="${c}"/>`,
+};
+
+// MARK: - Layouts
+
+const layouts: Record<Props['variant'], { chars: Char[]; confetti: Confetti[] }> = {
+  hero: {
+    chars: [
+      { kind: 'app', at: [12, 22], size: 64, tilt: -8, phone: [7, 13] },
+      { kind: 'laptop', at: [84, 15], size: 80, tilt: 6, phone: [80, 12] },
+      { kind: 'burst', at: [4, 40], size: 54 },
+      { kind: 'pebble', at: [91, 37], size: 56, mood: 'sleep' },
+      { kind: 'shutter', at: [8, 59], size: 58, tilt: 8 },
+      { kind: 'bell', at: [87, 57], size: 62, tilt: -6 },
+      { kind: 'speaker', at: [21, 73], size: 68, tilt: -4 },
+      { kind: 'note', at: [76, 73], size: 54, tilt: 10 },
+      { kind: 'sign', at: [29, 15], size: 50, tilt: -10 },
+      { kind: 'tag', at: [68, 14], size: 48, tilt: 12 },
+    ],
+    confetti: [
+      { bit: 'spark', at: [22, 13], size: 20, color: '#ffc247', phone: [30, 12] },
+      { bit: 'spark', at: [11, 48], size: 16, color: '#6aa8ff' },
+      { bit: 'dot', at: [16, 64], size: 10, color: '#9b7bff' },
+      { bit: 'dot', at: [58, 13], size: 9, color: '#ff7eb6', phone: [64, 13] },
+      { bit: 'ring', at: [39, 13], size: 18, color: '#9b7bff' },
+      { bit: 'heart', at: [76, 25], size: 18, color: '#ff5a5a' },
+      { bit: 'tune', at: [80, 40], size: 20, color: '#ff8a3d' },
+      { bit: 'bolt', at: [82, 67], size: 18, color: '#ffc247' },
+      { bit: 'dash', at: [93, 25], size: 18, color: '#9a9aa2', tilt: -12 },
+      { bit: 'spark', at: [64, 77], size: 14, color: '#ff7eb6' },
+    ],
+  },
+  pricing: {
+    chars: [
+      { kind: 'bell', at: [6, 14], size: 62, tilt: -8 },
+      { kind: 'sign', at: [89, 10], size: 58, tilt: 8 },
+      { kind: 'note', at: [4, 52], size: 52, tilt: 10 },
+      { kind: 'tag', at: [91, 46], size: 54, tilt: -10 },
+      { kind: 'laptop', at: [8, 80], size: 70, tilt: 4 },
+      { kind: 'speaker', at: [87, 78], size: 62, tilt: -6 },
+    ],
+    confetti: [
+      { bit: 'spark', at: [12, 34], size: 18, color: '#ffc247' },
+      { bit: 'heart', at: [94, 30], size: 16, color: '#ff5a5a' },
+      { bit: 'dot', at: [3, 68], size: 10, color: '#ff7eb6' },
+      { bit: 'tune', at: [95, 64], size: 18, color: '#9b7bff' },
+      { bit: 'ring', at: [14, 94], size: 16, color: '#6aa8ff' },
+      { bit: 'spark', at: [83, 93], size: 14, color: '#4fd18b' },
+    ],
+  },
+};
+
+const { chars, confetti } = layouts[variant];
+
+// Gentle, varied drift for each piece (deterministic, so the server and browser agree).
+let seed = variant === 'hero' ? 7 : 19;
+const rand = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+const drift = () => {
+  const r = () => rand() * 2 - 1;
+  return `--dx:${(r() * 7).toFixed(1)}px;--dy:${(-5 - rand() * 6).toFixed(1)}px;--dr:${(r() * 5).toFixed(1)}deg;--dur:${(5.2 + rand() * 3).toFixed(2)}s;--delay:${(-rand() * 6).toFixed(2)}s;--blink:${(3.6 + rand() * 3.4).toFixed(2)}s`;
+};
+const place = (at: [number, number], size: number, tilt = 0, phone?: [number, number]) =>
+  `--x:${at[0]}%;--y:${at[1]}%;--s:${size}px;--tilt:${tilt}deg;--px:${phone?.[0] ?? 0}%;--py:${phone?.[1] ?? 0}%;--depth:${(0.4 + rand() * 0.6).toFixed(2)};${drift()}`;
+---
+
+<div class:list={['faces', variant]} data-faces={variant} aria-hidden="true">
+  {
+    confetti.map((c) => (
+      <span class:list={['ff-item', 'bit', { 'no-phone': !c.phone }]} style={place(c.at, c.size, c.tilt, c.phone)}>
+        <span class="ff-drift">
+          <svg viewBox="0 0 24 24" set:html={bits[c.bit](c.color)} />
+        </span>
+      </span>
+    ))
+  }
+  {
+    chars.map((c) => (
+      <span class:list={['ff-item', { 'no-phone': !c.phone }]} style={place(c.at, c.size, c.tilt, c.phone)}>
+        <span class="ff-drift">
+          <span class="ff-char" data-char data-kind={c.kind} data-voice={voices[c.kind]} data-base={c.mood ?? 'idle'} data-mood={c.mood ?? 'idle'}>
+            <svg viewBox="0 0 48 48" set:html={bodies[c.kind]} />
+          </span>
+        </span>
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  .faces {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .faces.hero {
+    /* The space around the headline, above the laptop */
+    bottom: auto;
+    height: 100svh;
+    min-height: 640px;
+  }
+
+  .ff-item {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--s);
+    translate: -50% -50%;
+  }
+
+  .ff-drift {
+    display: block;
+    rotate: var(--tilt);
+    animation: drift var(--dur) ease-in-out var(--delay) infinite;
+  }
+
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    50% {
+      transform: translate(var(--dx), var(--dy)) rotate(var(--dr));
+    }
+  }
+
+  .ff-item svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ff-char {
+    display: block;
+    pointer-events: auto;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: scale 0.35s var(--spring);
+  }
+
+  .ff-char:hover {
+    scale: 1.12;
+  }
+
+  .ff-char:active {
+    scale: 0.92;
+  }
+
+  /* MARK: Moods: only the parts for the current mood show */
+
+  .ff-char :global(.e),
+  .ff-char :global(.m),
+  .ff-char :global(.zzz) {
+    display: none;
+  }
+
+  .ff-char[data-mood='idle'] :global(.e-open),
+  .ff-char[data-mood='wow'] :global(.e-open),
+  .ff-char[data-mood='happy'] :global(.e-happy),
+  .ff-char[data-mood='sleep'] :global(.e-shut),
+  .ff-char[data-mood='wink'] :global(.e-wink),
+  .ff-char[data-mood='cool'] :global(.e-cool),
+  .ff-char[data-mood='idle'] :global(.m-smile),
+  .ff-char[data-mood='happy'] :global(.m-smile),
+  .ff-char[data-mood='wink'] :global(.m-smile),
+  .ff-char[data-mood='cool'] :global(.m-smile),
+  .ff-char[data-mood='wow'] :global(.m-o),
+  .ff-char[data-mood='sleep'] :global(.m-flat),
+  .ff-char[data-mood='sleep'] :global(.zzz) {
+    display: inline;
+  }
+
+  /* Blinking, each at its own pace */
+  .ff-char :global(.e-open) {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blink var(--blink) infinite;
+  }
+
+  @keyframes blink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  .ff-char :global(.zzz) {
+    animation: snooze 2.4s ease-in-out infinite;
+  }
+
+  @keyframes snooze {
+    50% {
+      transform: translate(1px, -2px);
+      opacity: 0.55;
+    }
+  }
+
+  /* The speaker's waves pulse while a sound plays */
+  .ff-char :global(.wave) {
+    opacity: 0.35;
+    transition: opacity 0.2s;
+  }
+
+  .faces.is-playing .ff-char :global(.wave) {
+    animation: wave 0.5s ease-in-out infinite alternate;
+  }
+
+  .faces.is-playing .ff-char :global(.w2) {
+    animation-delay: 0.18s;
+  }
+
+  @keyframes wave {
+    from {
+      opacity: 0.25;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Before the crew pops in */
+  .faces:not(.is-in) .ff-item {
+    opacity: 0;
+  }
+
+  /* MARK: Sizes */
+
+  .faces.pricing {
+    display: none;
+  }
+
+  /* The pricing crew needs the room beside the shop */
+  @media (min-width: 1180px) {
+    .faces.pricing {
+      display: block;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .faces.hero .ff-item {
+      width: calc(var(--s) * 0.8);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .faces.hero .ff-item {
+      left: var(--px);
+      top: var(--py);
+      width: calc(var(--s) * 0.62);
+    }
+
+    .faces.hero .ff-item.no-phone {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ff-drift,
+    .ff-char :global(.e-open),
+    .ff-char :global(.zzz) {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { allSounds, type SoundId } from '../data/sounds';
+  import { getState, onPlay, play } from '../scripts/audio';
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+  const fields = [...document.querySelectorAll<HTMLElement>('[data-faces]')];
+
+  // Faces they pull on their own now and then (sleepy ones mostly wake up happy).
+  const whims = ['happy', 'wink', 'wow', 'cool', 'happy', 'wink'];
+
+  fields.forEach((field) => {
+    const chars = [...field.querySelectorAll<HTMLElement>('[data-char]')];
+    const items = [...field.querySelectorAll<HTMLElement>('.ff-item')];
+    const timers = new WeakMap<HTMLElement, number>();
+    let visible = false;
+
+    /** Shows a mood for a while, then goes back to the character's usual face. */
+    const feel = (el: HTMLElement, mood: string, ms = 1800) => {
+      el.dataset.mood = mood;
+      clearTimeout(timers.get(el));
+      timers.set(el, window.setTimeout(() => (el.dataset.mood = el.dataset.base!), ms));
+    };
+
+    // Pop in the first time the field is on screen.
+    let entered = false;
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (!visible || entered) return;
+      entered = true;
+      field.classList.add('is-in');
+      if (!reduceMotion) {
+        gsap.from(items, {
+          scale: 0,
+          rotation: () => gsap.utils.random(-30, 30),
+          duration: 0.7,
+          ease: 'back.out(2.4)',
+          stagger: { each: 0.035, from: 'random' },
+          delay: 0.15,
+          clearProps: 'scale,rotation',
+        });
+      }
+    }).observe(field);
+
+    // Every so often, someone pulls a face.
+    window.setInterval(() => {
+      if (!visible || document.hidden) return;
+      const el = chars[Math.floor(Math.random() * chars.length)];
+      if (el.dataset.mood !== el.dataset.base) return;
+      feel(el, whims[Math.floor(Math.random() * whims.length)], 1400 + Math.random() * 1400);
+    }, 1300);
+
+    // Everyone jumps when a sound plays, the closest to the middle first.
+    onPlay((_, duration) => {
+      if (!visible) return;
+      field.classList.add('is-playing');
+      window.setTimeout(() => field.classList.remove('is-playing'), Math.min(duration, 3) * 1000);
+      chars.forEach((el, i) => {
+        feel(el, 'wow', 380);
+        window.setTimeout(() => feel(el, 'happy', 1600), 380);
+        if (!reduceMotion) {
+          gsap.fromTo(
+            el,
+            { y: 0 },
+            { y: -12, duration: 0.18, ease: 'power2.out', yoyo: true, repeat: 1, delay: i * 0.03 },
+          );
+        }
+      });
+    });
+
+    chars.forEach((el) => {
+      el.addEventListener('pointerenter', () => feel(el, 'happy', 1200));
+      el.addEventListener('click', () => {
+        const voice = el.dataset.voice!;
+        const id =
+          voice === 'open'
+            ? getState().openSound
+            : voice === 'random'
+              ? allSounds[Math.floor(Math.random() * allSounds.length)].id
+              : (voice as SoundId);
+        play(id);
+        if (!reduceMotion) gsap.fromTo(el, { rotation: -14 }, { rotation: 0, duration: 0.8, ease: 'elastic.out(1.2, 0.3)' });
+      });
+    });
+
+    // A little depth: the crew leans away from the pointer.
+    if (finePointer && !reduceMotion) {
+      const movers = items.map((el) => ({
+        x: gsap.quickTo(el, 'x', { duration: 0.9, ease: 'power3.out' }),
+        y: gsap.quickTo(el, 'y', { duration: 0.9, ease: 'power3.out' }),
+        depth: Number(getComputedStyle(el).getPropertyValue('--depth')) || 0.6,
+      }));
+      window.addEventListener(
+        'pointermove',
+        (e) => {
+          if (!visible) return;
+          const nx = e.clientX / window.innerWidth - 0.5;
+          const ny = e.clientY / window.innerHeight - 0.5;
+          movers.forEach((m) => {
+            m.x(-nx * 22 * m.depth);
+            m.y(-ny * 16 * m.depth);
+          });
+        },
+        { passive: true },
+      );
+    }
+  });
+</script>

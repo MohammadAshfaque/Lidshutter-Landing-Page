@@ -1,0 +1,41 @@
+---
+import Base from '../../layouts/Base.astro';
+import Prose from '../../components/Prose.astro';
+import { totalSoundCount } from '../../data/sounds';
+---
+
+<Base title="How every LidShutter sound is made in code" description="No recordings, no audio files: how LidShutter builds its sounds from scratch." home={false}>
+  <Prose eyebrow="Blog" title="How every LidShutter sound is made in code">
+    <p>
+      LidShutter has {totalSoundCount} sounds, and none of them is a recording. There are no audio files in the app at all.
+      Every sound is built from scratch, in code, the moment it plays.
+    </p>
+
+    <h2>Building a shutter from tiny clicks</h2>
+    <p>
+      The Rolling Shutter sound starts as a stream of short metallic clicks that speed up and rise in pitch, like a shutter
+      gathering speed as it rolls. Under them, a soft tone glides upward. At the top comes a deep “ka-chunk”, and then a
+      little marimba “ding”.
+    </p>
+
+    <h2>A small toolbox of building blocks</h2>
+    <p>Most sounds are made from the same handful of pieces, combined in different ways:</p>
+    <ul>
+      <li><strong>Glides</strong>: a tone that slides between two pitches, for whooshes, chirps and pops.</li>
+      <li><strong>Marimba notes</strong>: a warm tone with a bright overtone, for dings and fanfares.</li>
+      <li><strong>Bubbles</strong>: a quick upward sweep that sounds like a water drop.</li>
+      <li><strong>Filtered noise</strong>: shaped hiss for wind, waves, rain and thunder.</li>
+      <li><strong>Wobbles</strong>: a tone with vibrato, for springs and rubber ducks.</li>
+    </ul>
+
+    <h2>Why make sounds this way?</h2>
+    <p>
+      Sounds made in code are tiny, have nothing to license, and are created in a few milliseconds. They also let
+      LidShutter do things a recording can’t, like making a sound louder past 100% with a soft limiter so it stays clean.
+    </p>
+    <p>
+      You can hear every one of them on the <a href="/#roll">LidShutter homepage</a>. The website plays them with the same
+      recipes the app uses.
+    </p>
+  </Prose>
+</Base>

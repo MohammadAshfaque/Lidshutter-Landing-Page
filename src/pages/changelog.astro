@@ -1,0 +1,61 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { totalSoundCount } from '../data/sounds';
+---
+
+<Base title="Changelog" description="What's new in LidShutter, version by version." home={false}>
+  <Prose eyebrow="Changelog" title="What’s new">
+    <div class="release">
+      <div class="release-head">
+        <span class="version">1.0</span>
+        <h2>The shop is open</h2>
+      </div>
+      <p>The first release of LidShutter.</p>
+      <ul>
+        <li><strong>{totalSoundCount} original sounds</strong>, all made in code: shutters, playful pops, a supercar, nature, and goodbye sounds for closing the lid.</li>
+        <li><strong>Plays before the lid shuts</strong>: LidShutter reads the lid angle, so the close sound lands right as the lid closes.</li>
+        <li><strong>Trackpad vibration</strong> that buzzes along with each sound, with Light, Medium and Strong settings.</li>
+        <li><strong>A dice on each sound</strong> in the menu bar, for a surprise pick.</li>
+        <li><strong>Volume up to 200%</strong>, louder than normal without crackling.</li>
+        <li><strong>Your shop’s stats</strong>: openings today, this week, all time, and your day streak.</li>
+        <li><strong>Only after a real break</strong>: skip the sound after a quick close and open.</li>
+        <li><strong>One license, one Mac.</strong> Need more Macs? Buy a pack for 2 to 10. Enter your key once with internet, then the app works without it.</li>
+        <li>Open at login, and very low battery use. No account, and no data collected about you.</li>
+      </ul>
+    </div>
+    <p class="note">New versions will be listed here. Questions or ideas? <a href="/support">Get in touch</a>.</p>
+  </Prose>
+</Base>
+
+<style>
+  .release {
+    padding: 24px;
+    border-radius: var(--r-card);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+  }
+
+  .release-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .release-head h2 {
+    margin: 0 !important;
+  }
+
+  .version {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--on-gold);
+    background: var(--gold);
+  }
+
+  .note {
+    margin-top: 24px;
+  }
+</style>

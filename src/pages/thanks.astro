@@ -1,0 +1,199 @@
+---
+// Where Dodo Payments sends people after they pay. It adds ?license_key=… to the address,
+// and this page shows that key with a copy button and the three steps to switch LidShutter on.
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { site } from '../data/site';
+---
+
+<Base title="Thank you" description="Your LidShutter license key and how to activate it." home={false} noindex>
+  <Prose eyebrow="Thank you" title="You’re all set. Here’s your key.">
+    <div class="key-card" data-key-card hidden>
+      <p class="key-label" data-key-label>Your license key</p>
+      <ul class="keys" data-keys></ul>
+      <p class="key-note">We’ve also emailed it to you. Keep it somewhere safe.</p>
+    </div>
+
+    <p class="callout" data-no-key hidden>
+      Your key is on its way by email, usually within a minute. Can’t find it? Check spam, or write to
+      <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> and we’ll send it again.
+    </p>
+
+    <h2>Switch LidShutter on</h2>
+    <ol class="steps">
+      <li>
+        <strong>Download LidShutter</strong> and drag it to your Applications folder.
+        <a class="dl" href={site.downloadUrl}>Download for Mac</a>
+      </li>
+      <li>Open it, then click the <strong>menu bar icon</strong> and choose <strong>Open Dashboard → License</strong>.</li>
+      <li>Paste your key and press <strong>Activate</strong>. Your lid sounds start right away.</li>
+    </ol>
+
+    <h2>Good to know</h2>
+    <ul>
+      <li>One key activates one Mac. A multi-Mac pack has one key that covers all the Macs you bought.</li>
+      <li>Activating needs the internet once. After that, LidShutter works fully offline.</li>
+      <li>Getting a new Mac? Open <strong>License → Deactivate this Mac</strong> first, then use the key on the new one.</li>
+    </ul>
+  </Prose>
+</Base>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  // Dodo separates several keys (one per Mac in some setups) with commas.
+  const keys = (params.get('license_key') ?? '').split(',').map((k) => k.trim()).filter(Boolean);
+
+  const card = document.querySelector<HTMLElement>('[data-key-card]')!;
+  const list = document.querySelector<HTMLUListElement>('[data-keys]')!;
+  const noKey = document.querySelector<HTMLElement>('[data-no-key]')!;
+  const label = document.querySelector<HTMLElement>('[data-key-label]')!;
+
+  if (keys.length === 0) {
+    noKey.hidden = false;
+  } else {
+    card.hidden = false;
+    label.textContent = keys.length > 1 ? 'Your license keys' : 'Your license key';
+    for (const key of keys) {
+      const item = document.createElement('li');
+      const code = document.createElement('code');
+      code.textContent = key;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = 'Copy';
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(key);
+          button.textContent = 'Copied ✓';
+        } catch {
+          // Clipboard blocked: select the key so ⌘C works.
+          const range = document.createRange();
+          range.selectNodeContents(code);
+          getSelection()?.removeAllRanges();
+          getSelection()?.addRange(range);
+          button.textContent = 'Press ⌘C';
+        }
+        setTimeout(() => (button.textContent = 'Copy'), 2200);
+      });
+      item.append(code, button);
+      list.append(item);
+    }
+    // Don't leave the key sitting in the address bar and browser history.
+    history.replaceState(null, '', location.pathname);
+  }
+</script>
+
+<style>
+  .key-card {
+    padding: 22px;
+    border-radius: var(--r-card);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset, var(--shadow);
+  }
+
+  .key-card[hidden],
+  .callout[hidden] {
+    display: none;
+  }
+
+  .key-label {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .keys {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .keys :global(li) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg);
+    box-shadow: 0 0 0 1px var(--stroke-strong) inset;
+  }
+
+  .keys :global(code) {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    user-select: all;
+  }
+
+  .keys :global(button) {
+    flex: none;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--on-gold);
+    background: var(--light);
+    transition: transform 0.3s var(--spring);
+  }
+
+  .keys :global(button:hover) {
+    transform: scale(1.06);
+  }
+
+  /* Narrow phones: a long key gets the full width, with Copy beneath it */
+  @media (max-width: 420px) {
+    .key-card {
+      padding: 18px;
+    }
+
+    .keys :global(li) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .keys :global(code) {
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .keys :global(button) {
+      padding: 10px 14px;
+    }
+  }
+
+  .key-note {
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  .steps {
+    margin: 0;
+    padding-left: 22px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .dl {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--on-gold);
+    background: var(--light);
+  }
+</style>

@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { site } from '../data/site';
+---
+
+<Base title="Privacy Policy" description="LidShutter collects no personal data. After you activate it, it works offline, with no account, analytics or tracking." home={false}>
+  <Prose eyebrow="Privacy" title="Privacy Policy" updated="October 6, 2026">
+    <p class="callout"><strong>The short version:</strong> LidShutter collects nothing about you. It checks your license key with our payment provider when you activate it, and after that works offline. Everything else it knows stays on your Mac.</p>
+
+    <h2>What the app stores</h2>
+    <p>LidShutter saves a few things on your Mac so it can work the way you set it up:</p>
+    <ul>
+      <li>Your settings, such as your chosen sounds, volume, and whether it opens at login.</li>
+      <li>The times you opened your lid, used only to show your stats (today, this week, all time, and your day streak). Individual openings older than about 400 days are deleted automatically.</li>
+    </ul>
+    <p>This information is stored only in the app’s local preferences on your Mac. It is never sent anywhere, and we can’t see it.</p>
+
+    <h2>What the app does not do</h2>
+    <ul>
+      <li>It does not connect to the internet, except to check your license key (see below).</li>
+      <li>It has no accounts and no sign-in.</li>
+      <li>It has no analytics, advertising, or tracking of any kind.</li>
+      <li>It does not use the microphone or camera, and it doesn’t read your files.</li>
+    </ul>
+
+    <h2>License keys and payments</h2>
+    <p>LidShutter is paid. Payments and license keys are handled by <strong>Dodo Payments</strong>, who act as the seller and process your payment. We never see or store your card details.</p>
+    <p>When you activate a key, LidShutter sends Dodo Payments two things: your license key, and your Mac’s model (for example “Mac17,2”), so the key can be tied to your Mac. It does the same if you deactivate, and it quietly re-checks the key at most once a week while your Mac happens to be online, to confirm it hasn’t been refunded. If your Mac is offline, nothing changes and LidShutter keeps working. Your name, your Mac’s name and your files are never sent.</p>
+    <p>Dodo Payments shares your email address and country with us so we can deliver your key and help if something goes wrong.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about privacy? Email <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>.</p>
+  </Prose>
+</Base>

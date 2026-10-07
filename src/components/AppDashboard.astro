@@ -1,0 +1,2175 @@
+---
+// A working copy of the LidShutter app: the menu bar menu (MenuContentView) and the
+// dashboard window (DashboardView) with its Overview, Sounds and Settings panes.
+import Icon from './Icon.astro';
+import Glyph from './Glyph.astro';
+import AppIcon from './AppIcon.astro';
+import PlayButton from './PlayButton.astro';
+import DiceButton from './DiceButton.astro';
+import menubarSvg from '../data/menubar.svg?raw';
+import { openGroups, closeGroup, type SoundGroup } from '../data/sounds';
+
+const allGroups = [...openGroups, closeGroup];
+const everySound = allGroups.flatMap((g) => g.sounds.map((s) => ({ ...s, tint: g.tint })));
+const openSounds = openGroups.flatMap((g) => g.sounds.map((s) => ({ ...s, tint: g.tint })));
+const closeSounds = closeGroup.sounds.map((s) => ({ ...s, tint: closeGroup.tint }));
+
+const panes = [
+  { id: 'overview', title: 'Overview', icon: 'chart-bar' },
+  { id: 'sounds', title: 'Sounds', icon: 'speaker-high' },
+  { id: 'settings', title: 'Settings', icon: 'gear-six' },
+];
+
+// Sample numbers, as on a real Mac after a week of use.
+const week = [1, 2, 1, 3, 1, 2, 3];
+const stats = [
+  { key: 'today', label: 'Today', icon: 'sun', tint: 'gold', value: 3 },
+  { key: 'week', label: 'This Week', icon: 'calendar-blank', tint: 'mint', value: 13 },
+  { key: 'total', label: 'All Time', icon: 'laptop', tint: 'pink', value: 248 },
+  { key: 'streak', label: 'Day Streak', icon: 'fire', tint: 'coral', value: 7 },
+];
+
+const delays = [
+  { value: '0', label: 'Always' },
+  { value: '1', label: '1 minute' },
+  { value: '5', label: '5 minutes' },
+  { value: '15', label: '15 minutes' },
+  { value: '60', label: '1 hour' },
+];
+
+const soundPanels: { id: 'open' | 'close'; groups: SoundGroup[] }[] = [
+  { id: 'open', groups: openGroups },
+  { id: 'close', groups: [closeGroup] },
+];
+---
+
+<div class="app-root" data-app-root>
+      <div class="desk" data-desk data-dark>
+        <!-- macOS menu bar -->
+        <div class="bar">
+          <div class="bar-left"><b>LidShutter</b><span>File</span><span>Edit</span><span>View</span><span>Window</span></div>
+          <div class="bar-right">
+            <button type="button" class="mb-item" data-menu-toggle aria-expanded="false" aria-controls="ls-menu">
+              <span class="sr-only">LidShutter menu</span>
+              <span class="glyph" set:html={menubarSvg} />
+              <span class="mb-ping" aria-hidden="true"></span>
+            </button>
+            <span class="sys"><Icon name="Wifi" /></span>
+            <span class="sys"><Icon name="Search" /></span>
+            <span class="clock" data-desk-clock>9:41</span>
+          </div>
+        </div>
+
+        <!-- Menu bar menu (MenuContentView) -->
+        <div class="menu is-closed" id="ls-menu" data-menu>
+          <div class="m-head">
+            <AppIcon size={40} class="m-logo" />
+            <div>
+              <strong>LidShutter</strong>
+              <span class="status" data-status><i></i><span data-status-text>Active</span></span>
+            </div>
+            <button type="button" class="switch" role="switch" aria-checked="true" aria-label="LidShutter on" data-bind="enabled"></button>
+          </div>
+
+          {
+            [
+              { kind: 'open', label: 'When I open', glyph: 'sun-horizon', list: openSounds, tint: 'gold' },
+              { kind: 'close', label: 'When I close', glyph: 'moon', list: closeSounds, tint: 'lilac' },
+            ].map((row) => (
+              <div class="m-card" data-row={row.kind} data-gate>
+                <span class="badge row-badge" style="--size:38px" data-row-badge={row.kind}>
+                  {row.list.map((s) => (
+                    <span class="sound-ico" data-ico={s.id}>
+                      <Glyph name={s.icon} />
+                    </span>
+                  ))}
+                </span>
+                <div class="m-text">
+                  <span class="m-label">
+                    <Glyph name={row.glyph} /> {row.label}
+                  </span>
+                  <label class="m-select">
+                    <span class="sr-only">{`Sound ${row.label.toLowerCase()}`}</span>
+                    <select data-pick={row.kind}>
+                      {row.kind === 'open'
+                        ? openGroups.map((g) => (
+                            <optgroup label={g.title}>
+                              {g.sounds.map((s) => (
+                                <option value={s.id}>{s.title}</option>
+                              ))}
+                            </optgroup>
+                          ))
+                        : closeSounds.map((s) => <option value={s.id}>{s.title}</option>)}
+                    </select>
+                    <Icon name="ChevronsUpDown" />
+                  </label>
+                </div>
+                <DiceButton label={`Surprise me: a random sound ${row.label.toLowerCase()}`} tint={row.tint as never} size={28} data-roll={row.kind} />
+                <PlayButton sound={row.kind === 'open' ? '@open' : '@close'} tint={row.tint as never} label={`your ${row.kind} sound`} size={30} />
+                <button type="button" class="switch sm" role="switch" aria-checked="true" aria-label={`Play ${row.label.toLowerCase()}`} data-bind={row.kind === 'open' ? 'playOnOpen' : 'playOnClose'}></button>
+              </div>
+            ))
+          }
+
+          <div class="m-volume" data-gate>
+            <Glyph name="speaker-simple-low" />
+            <input type="range" min="0" max="2" step="0.01" aria-label="Volume" data-volume />
+            <Glyph name="speaker-simple-high" />
+            <output class="pct" data-pct>70%</output>
+          </div>
+
+          <label class="m-row" data-gate>
+            <span>Only if closed for at least</span>
+            <span class="m-select small">
+              <select aria-label="Only if closed for at least" data-delay>
+                {delays.map((d) => <option value={d.value}>{d.label}</option>)}
+              </select>
+              <Icon name="ChevronsUpDown" />
+            </span>
+          </label>
+
+          <label class="m-check" data-gate>
+            <input type="checkbox" data-login-check />
+            <span>Open at login</span>
+          </label>
+
+          <div class="m-foot">
+            <button type="button" class="m-btn" data-open-dashboard>Open Dashboard</button>
+            <button type="button" class="m-btn" data-quit>Quit</button>
+          </div>
+          <p class="quit-tip" data-quit-tip role="status"></p>
+        </div>
+
+        <!-- Dashboard window (DashboardView) -->
+        <div class="win" data-win>
+          <aside class="side">
+            <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+            <nav class="side-nav" aria-label="Dashboard" data-side-nav>
+              <span class="side-hl" data-side-hl aria-hidden="true"></span>
+              {
+                panes.map((p, i) => (
+                  <button type="button" class="side-row" data-pane={p.id} aria-current={i === 0 ? 'page' : undefined}>
+                    <span class="side-ico">
+                      <Glyph name={p.icon} />
+                    </span>
+                    {p.title}
+                  </button>
+                ))
+              }
+            </nav>
+            <div class="brand">
+              <AppIcon size={28} />
+              <div>
+                <strong>LidShutter</strong>
+                <span>Version 1.0</span>
+              </div>
+            </div>
+          </aside>
+
+          <div class="main">
+            <div class="toolbar"><span data-pane-title>Overview</span></div>
+            <div class="pages" data-pages data-lenis-prevent>
+              <!-- MARK: Overview -->
+              <div class="page" data-page="overview">
+                <div class="card ov-hero" data-gate-soft>
+                  <AppIcon size={72} class="ov-logo" />
+                  <div class="ov-text">
+                    <p class="greet" data-greet>
+                      <span data-greet-ico="sun"><Glyph name="sun" /></span>
+                      <span data-greet-ico="haze" hidden><Glyph name="sun-horizon" /></span>
+                      <span data-greet-ico="moon" hidden><Glyph name="moon-stars" /></span>
+                      <span data-greet-text>Good morning</span>
+                    </p>
+                    <button type="button" class="headline" data-headline title="Click for the next one">
+                      <span class="hl-text" data-headline-text>You’ve opened your Mac 3 times today</span>
+                    </button>
+                    <div class="dots" data-dots></div>
+                    <div class="ov-status">
+                      <span class="status" data-status><i></i><span data-status-text>Active</span></span>
+                      <span class="last">Last opened at 9:14 AM</span>
+                    </div>
+                  </div>
+                  <button type="button" class="switch lg" role="switch" aria-checked="true" aria-label="LidShutter on" data-bind="enabled"></button>
+                </div>
+
+                <div class="stat-row">
+                  {
+                    stats.map((s, i) => (
+                      <div class="card stat" data-tint={s.tint} style={`--i:${i}`}>
+                        <span class="badge" style="--size:32px">
+                          <Glyph name={s.icon} />
+                        </span>
+                        <span class="stat-value" data-count={s.value}>
+                          0
+                        </span>
+                        <span class="stat-label">{s.label}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+
+                <div class="card ys">
+                  <div class="ys-head">
+                    <strong>Your Sounds</strong>
+                    <button type="button" class="link" data-goto="sounds">Change</button>
+                  </div>
+                  {
+                    [
+                      { kind: 'open', label: 'When the lid opens', list: openSounds },
+                      { kind: 'close', label: 'When the lid closes', list: closeSounds },
+                    ].map((row, i) => (
+                      <>
+                        {i > 0 && <hr />}
+                        <div class="ys-row" data-ys={row.kind}>
+                          <span class="badge" style="--size:42px" data-ys-badge={row.kind}>
+                            {row.list.map((s) => (
+                              <span class="sound-ico" data-ico={s.id}>
+                                <Glyph name={s.icon} />
+                              </span>
+                            ))}
+                          </span>
+                          <div class="ys-text">
+                            <span>{row.label}</span>
+                            <strong data-ys-title={row.kind}>Rolling Shutter</strong>
+                          </div>
+                          <PlayButton sound={row.kind === 'open' ? '@open' : '@close'} tint="gold" label={`your ${row.kind} sound`} size={34} />
+                        </div>
+                      </>
+                    ))
+                  }
+                </div>
+
+                <div class="card chart">
+                  <strong>Last 7 Days</strong>
+                  <div class="plot" data-plot role="img" aria-label="Lid openings for the last 7 days">
+                    <div class="grid" aria-hidden="true">
+                      <span data-y="4">4</span>
+                      <span data-y="2">2</span>
+                      <span data-y="0">0</span>
+                    </div>
+                    <div class="bars">
+                      {
+                        week.map((v, i) => (
+                          <div class="bar-col">
+                            <div class="bar-slot">
+                              <i style={`--v:${v}; --i:${i}`} />
+                            </div>
+                            <span data-day={i} />
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MARK: Sounds -->
+              <div class="page" data-page="sounds" hidden>
+                <div class="seg-wrap">
+                  <div class="segmented" role="tablist" aria-label="Sound type" data-seg>
+                    <button type="button" role="tab" aria-selected="true" data-tab="open"><Glyph name="sun-horizon" /> Lid Opens</button>
+                    <button type="button" role="tab" aria-selected="false" data-tab="close" tabindex="-1"><Glyph name="moon" /> Lid Closes</button>
+                    <span class="seg-thumb" aria-hidden="true"></span>
+                  </div>
+                </div>
+
+                {
+                  soundPanels.map((panel) => (
+                    <div class="sp" data-sp={panel.id} hidden={panel.id === 'close'}>
+                      <div class="card toggle-card" data-tint={panel.id === 'open' ? 'gold' : 'lilac'}>
+                        <span class="badge" style="--size:36px">
+                          <Glyph name={panel.id === 'open' ? 'sun-horizon' : 'moon'} />
+                        </span>
+                        <div>
+                          <strong>{panel.id === 'open' ? 'Play a sound when the lid opens' : 'Play a sound when the lid closes'}</strong>
+                          <span>{panel.id === 'open' ? 'Click a sound to choose it and hear it.' : 'It plays as the lid comes down, so it lands as it shuts.'}</span>
+                        </div>
+                        <button type="button" class="switch" role="switch" aria-checked="true" aria-label={panel.id === 'open' ? 'Play when the lid opens' : 'Play when the lid closes'} data-bind={panel.id === 'open' ? 'playOnOpen' : 'playOnClose'} />
+                      </div>
+                      <div class="sp-body" data-sp-body={panel.id}>
+                        {panel.groups.map((group) => (
+                          <div class="group" data-tint={group.tint}>
+                            {panel.id === 'open' && (
+                              <h4 class="group-title">
+                                <span class="badge" style="--size:26px">
+                                  <Glyph name={group.icon} />
+                                </span>
+                                {group.title}
+                                <span class="count">{group.sounds.length} sounds</span>
+                              </h4>
+                            )}
+                            <div class="tiles">
+                              {group.sounds.map((sound) => (
+                                <div class="tile-wrap">
+                                  <button type="button" class="tile" data-tint={group.tint} data-select={sound.id} data-kind={panel.id} aria-pressed="false">
+                                    <span class="tile-top">
+                                      <span class="badge tile-icon" style="--size:38px">
+                                        <Glyph name={sound.icon} />
+                                      </span>
+                                      <span class="check" aria-hidden="true">
+                                        <Glyph name="check-circle" />
+                                      </span>
+                                    </span>
+                                    <span class="tile-title">{sound.title}</span>
+                                    <span class="tile-sub">{sound.subtitle}</span>
+                                  </button>
+                                  <PlayButton sound={sound.id} tint={group.tint} label={sound.title} size={28} class="tile-play" />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                        <p class="made">Every sound is original to LidShutter, made in code.</p>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+
+              <!-- MARK: Settings -->
+              <div class="page" data-page="settings" hidden>
+                <div class="form-group">
+                  <div class="frow">
+                    <span class="sicon" style="--c:#ffc247"><Glyph name="sun-horizon" /></span>
+                    <div class="ftext"><span>Play sound when the lid opens</span></div>
+                    <button type="button" class="switch" role="switch" aria-checked="true" aria-label="Play sound when the lid opens" data-bind="playOnOpen"></button>
+                  </div>
+                  <div class="frow">
+                    <span class="sicon" style="--c:#ff73b3"><Glyph name="hand-tap" /></span>
+                    <div class="ftext">
+                      <span>Trackpad vibration</span>
+                      <small>Buzzes with each sound. Felt while a finger rests on the trackpad.</small>
+                    </div>
+                    <button type="button" class="switch" role="switch" aria-checked="true" aria-label="Trackpad vibration" data-bind="haptics"></button>
+                  </div>
+                  <div class="frow" data-haptic-row>
+                    <span class="sicon" style="--c:#ff73b3"><Glyph name="waveform" /></span>
+                    <div class="ftext">
+                      <span>Vibration strength</span>
+                      <small>Strong taps harder and more often.</small>
+                    </div>
+                    <div class="fctl">
+                      <div class="mini-seg" role="radiogroup" aria-label="Vibration strength" data-strength>
+                        <button type="button" role="radio" data-value="light">Light</button>
+                        <button type="button" role="radio" data-value="medium">Medium</button>
+                        <button type="button" role="radio" data-value="strong">Strong</button>
+                      </div>
+                      <button type="button" class="m-btn sm" data-feel>Feel it</button>
+                    </div>
+                  </div>
+                  <div class="frow">
+                    <span class="sicon" style="--c:#ff7854"><Glyph name="speaker-high" /></span>
+                    <div class="ftext">
+                      <span>Volume</span>
+                      <small>Above 100% makes sounds louder than normal.</small>
+                    </div>
+                    <div class="fctl vol">
+                      <Glyph name="speaker-simple-low" />
+                      <input type="range" min="0" max="2" step="0.01" aria-label="Volume" data-volume />
+                      <Glyph name="speaker-simple-high" />
+                      <output class="pct" data-pct>70%</output>
+                    </div>
+                  </div>
+                  <div class="frow">
+                    <span class="sicon" style="--c:#ab8ffa"><Glyph name="timer" /></span>
+                    <div class="ftext">
+                      <span>Only if closed for at least</span>
+                      <small>Skips the sound after a quick close and open.</small>
+                    </div>
+                    <label class="m-select small">
+                      <select aria-label="Only if closed for at least" data-delay>
+                        {delays.map((d) => <option value={d.value}>{d.label}</option>)}
+                      </select>
+                      <Icon name="ChevronsUpDown" />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="frow">
+                    <span class="sicon" style="--c:#61d999"><Glyph name="power" /></span>
+                    <div class="ftext">
+                      <span>Open at login</span>
+                      <small>Starts LidShutter automatically so the sound always works after a restart.</small>
+                    </div>
+                    <button type="button" class="switch" role="switch" aria-checked="false" aria-label="Open at login" data-login></button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="frow">
+                    <span class="sicon" style="--c:#61d999"><Glyph name="leaf" /></span>
+                    <div class="ftext"><span>Battery use</span></div>
+                    <span class="very-low">Very low</span>
+                  </div>
+                </div>
+                <p class="form-foot">
+                  LidShutter sleeps until macOS reports that your lid moved. It never keeps your Mac awake, works offline once activated,
+                  and collects no data about you.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Every sound's tint, for the icons that change with the chosen sound -->
+  <script is:inline type="application/json" data-tints set:html={JSON.stringify(Object.fromEntries(everySound.map((s) => [s.id, s.tint])))} />
+
+<style>
+  /* MARK: Where it sits. The desk is drawn at a fixed size and scaled to the Mac screen it's shown on. */
+
+  .app-root {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  /* MARK: Desk and menu bar */
+
+  .desk {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--dw, 1000px);
+    height: var(--dh, 625px);
+    overflow: hidden;
+    background:
+      radial-gradient(60% 80% at 10% 110%, rgb(255 194 71 / 0.28), transparent 60%),
+      radial-gradient(50% 60% at 100% 0%, rgb(171 143 250 / 0.2), transparent 60%),
+      radial-gradient(40% 50% at 85% 100%, rgb(255 115 179 / 0.14), transparent 60%),
+      #17161b;
+    transform-origin: 0 0;
+    /* Set from script: the Mac screen's width divided by the desk's width */
+    transform: scale(var(--k, 1));
+  }
+
+  .bar {
+    position: relative;
+    z-index: 3;
+    height: 32px;
+    padding: 0 12px 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: rgb(255 255 255 / 0.9);
+    background: rgb(22 22 25 / 0.92);
+  }
+
+  .bar-left,
+  .bar-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .bar-right {
+    gap: 6px;
+  }
+
+  .bar-left b {
+    font-weight: 700;
+  }
+
+  .mb-item {
+    position: relative;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    transition: background-color 0.15s;
+  }
+
+  .mb-item:hover,
+  .mb-item[aria-expanded='true'] {
+    background: rgb(255 255 255 / 0.18);
+  }
+
+  .glyph :global(svg) {
+    width: 17px;
+    height: 17px;
+    color: #fff;
+  }
+
+  /* A soft ping that invites a click, until the menu is opened once */
+  .mb-ping {
+    position: absolute;
+    inset: -2px;
+    border-radius: 8px;
+    box-shadow: 0 0 0 2px var(--gold);
+    animation: ping 1.8s ease-out infinite;
+    pointer-events: none;
+  }
+
+  .mb-item.was-opened .mb-ping {
+    display: none;
+  }
+
+  @keyframes ping {
+    from {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+  }
+
+  .sys {
+    padding: 0 6px;
+  }
+
+  .sys :global(svg) {
+    width: 15px;
+    height: 15px;
+  }
+
+  .clock {
+    padding-left: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* MARK: Menu */
+
+  .menu {
+    position: absolute;
+    z-index: 5;
+    top: 38px;
+    right: 66px;
+    width: 360px;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgb(34 34 38 / 0.98);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12), 0 24px 60px -12px rgb(0 0 0 / 0.8);
+    font-size: 14px;
+    transform-origin: top right;
+    transition: opacity 0.2s, transform 0.4s var(--spring);
+  }
+
+  .menu.is-closed {
+    opacity: 0;
+    transform: scale(0.9) translateY(-8px);
+    pointer-events: none;
+  }
+
+  .m-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 2px 12px;
+  }
+
+  .m-head > div {
+    flex: 1;
+  }
+
+  .m-head strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .m-head :global(.m-logo) {
+    border-radius: 9px;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .status i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold);
+    transition: background-color 0.2s, box-shadow 0.2s;
+  }
+
+  .status.is-paused i {
+    background: var(--text-3);
+    box-shadow: none;
+  }
+
+  .m-card {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 14px;
+    background: rgb(255 255 255 / 0.05);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    transition: opacity 0.25s;
+  }
+
+  .m-card.is-off {
+    opacity: 0.6;
+  }
+
+  .sound-ico {
+    display: none;
+    width: 58%;
+    height: 58%;
+  }
+
+  .sound-ico.show {
+    display: grid;
+  }
+
+  .sound-ico :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .row-badge.pop,
+  [data-ys-badge].pop {
+    animation: pop 0.45s var(--spring);
+  }
+
+  @keyframes pop {
+    from {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+  }
+
+  .m-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .m-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .m-label :global(svg) {
+    width: 13px;
+    height: 13px;
+  }
+
+  .m-select {
+    position: relative;
+    display: flex;
+    align-items: center;
+    color: var(--accent);
+  }
+
+  .m-select select {
+    appearance: none;
+    width: 100%;
+    padding: 0 0 0 18px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: inherit;
+    cursor: pointer;
+    text-overflow: ellipsis;
+  }
+
+  .m-select select option,
+  .m-select select optgroup {
+    color: #000;
+  }
+
+  .m-select :global(svg) {
+    position: absolute;
+    left: 0;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+  }
+
+  .m-select.small {
+    color: var(--text);
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  .m-select.small select {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 18px 0 0;
+  }
+
+  .m-select.small :global(svg) {
+    left: auto;
+    right: 8px;
+    width: 12px;
+  }
+
+  .m-volume {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 4px;
+    color: var(--text-2);
+  }
+
+  .m-volume :global(svg),
+  .vol :global(svg) {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    color: var(--text-2);
+  }
+
+  input[type='range'] {
+    flex: 1;
+    min-width: 60px;
+    appearance: none;
+    height: 4px;
+    border-radius: 4px;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 1px), rgb(255 255 255 / 0.45) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(90deg, var(--gold) var(--fill, 35%), rgb(255 255 255 / 0.16) var(--fill, 35%));
+    cursor: pointer;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
+    transition: transform 0.2s var(--spring);
+  }
+
+  input[type='range']:active::-webkit-slider-thumb {
+    transform: scale(1.2);
+  }
+
+  input[type='range']::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .pct {
+    width: 38px;
+    flex: none;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-2);
+    transition: color 0.2s;
+  }
+
+  .pct.is-boosted {
+    color: var(--accent);
+  }
+
+  .m-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 4px;
+  }
+
+  .m-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px 12px;
+    cursor: pointer;
+  }
+
+  .m-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+  }
+
+  [data-gate] {
+    transition: opacity 0.25s;
+  }
+
+  .menu.is-disabled [data-gate] {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  .m-foot {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--stroke);
+  }
+
+  .m-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    background: rgb(255 255 255 / 0.08);
+    transition: background-color 0.15s, transform 0.3s var(--spring);
+  }
+
+  .m-btn:hover {
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .m-btn:active {
+    transform: scale(0.94);
+  }
+
+  .m-btn.sm {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .quit-tip {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .quit-tip:empty {
+    display: none;
+  }
+
+  .menu.shake {
+    animation: shake 0.45s;
+  }
+
+  @keyframes shake {
+    20%, 60% { translate: -6px 0; }
+    40%, 80% { translate: 6px 0; }
+  }
+
+  .switch.sm {
+    width: 32px;
+    height: 19px;
+  }
+
+  .switch.sm::after {
+    width: 15px;
+    height: 15px;
+  }
+
+  .switch.sm[aria-checked='true']::after {
+    transform: translateX(13px);
+  }
+
+  .switch.lg {
+    width: 52px;
+    height: 30px;
+  }
+
+  .switch.lg::after {
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .switch.lg[aria-checked='true']::after {
+    transform: translateX(22px);
+  }
+
+  /* MARK: Window */
+
+  .win {
+    position: relative;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    height: calc(100% - 32px - 48px);
+    margin: 22px 26px 26px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--bg);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12), 0 30px 80px -20px rgb(0 0 0 / 0.8);
+    transition: box-shadow 0.4s;
+  }
+
+  .win.flash {
+    box-shadow: 0 0 0 2px var(--gold), 0 30px 80px -20px rgb(255 194 71 / 0.4);
+  }
+
+  .side {
+    display: flex;
+    flex-direction: column;
+    padding: 14px 10px 0;
+    background: #121214;
+    border-right: 1px solid rgb(255 255 255 / 0.06);
+  }
+
+  .lights {
+    display: flex;
+    gap: 8px;
+    padding: 2px 6px 22px;
+  }
+
+  .lights i {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff5f57;
+  }
+
+  .lights i:nth-child(2) {
+    background: #febc2e;
+  }
+
+  .lights i:nth-child(3) {
+    background: #28c840;
+  }
+
+  .side-nav {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* One highlight that slides between rows, like the app's matchedGeometryEffect */
+  .side-hl {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 32px;
+    border-radius: 7px;
+    background: rgb(255 194 71 / 0.16);
+    box-shadow: 0 0 0 1px rgb(255 194 71 / 0.28) inset;
+    transition: transform 0.45s var(--spring);
+    pointer-events: none;
+  }
+
+  .side-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 7px;
+    font-size: 14px;
+    color: var(--text-2);
+    text-align: left;
+    transition: color 0.2s, background-color 0.15s;
+  }
+
+  .side-row:hover:not([aria-current]) {
+    background: rgb(255 255 255 / 0.05);
+  }
+
+  .side-row[aria-current] {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .side-ico {
+    width: 20px;
+    display: grid;
+    place-items: center;
+    transition: transform 0.35s var(--spring), color 0.2s;
+  }
+
+  .side-ico :global(svg) {
+    width: 15px;
+    height: 15px;
+  }
+
+  .side-row[aria-current] .side-ico {
+    color: var(--accent);
+    transform: scale(1.12);
+  }
+
+  .brand {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 6px;
+  }
+
+  .brand :global(img) {
+    border-radius: 7px;
+  }
+
+  .brand div {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  .brand strong {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .brand span {
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .toolbar {
+    flex: none;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 700;
+    border-bottom: 1px solid rgb(255 255 255 / 0.06);
+    background: rgb(22 22 24 / 0.9);
+  }
+
+  .pages {
+    position: relative;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.15) transparent;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 22px 24px 28px;
+  }
+
+  .page[hidden] {
+    display: none;
+  }
+
+  /* MARK: Overview */
+
+  .ov-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+  }
+
+  .ov-hero :global(.ov-logo) {
+    flex: none;
+    width: 72px;
+    height: 72px;
+    transition: transform 0.4s var(--spring);
+  }
+
+  .ov-hero :global(.ov-logo:hover) {
+    transform: scale(1.06) rotate(-4deg);
+  }
+
+  .ov-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .greet {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tint);
+  }
+
+  .greet :global(svg) {
+    width: 15px;
+    height: 15px;
+    display: block;
+  }
+
+  .headline {
+    position: relative;
+    height: 30px;
+    overflow: hidden;
+    text-align: left;
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .hl-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .dots :global(button) {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.2);
+    transition: width 0.35s var(--spring), background-color 0.2s;
+  }
+
+  .dots :global(button.on) {
+    width: 16px;
+    background: var(--gold);
+  }
+
+  .ov-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+  }
+
+  .stat .badge {
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: var(--font-rounded);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  .ys {
+    padding: 16px 18px;
+  }
+
+  .ys-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .ys-head strong,
+  .chart strong {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    transition: opacity 0.15s;
+  }
+
+  .link:hover {
+    opacity: 0.75;
+  }
+
+  .ys hr {
+    height: 1px;
+    margin: 10px 0;
+    border: 0;
+    background: rgb(255 255 255 / 0.07);
+  }
+
+  .ys-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .ys-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ys-text span {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .ys-text strong {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .chart {
+    padding: 16px 18px 12px;
+  }
+
+  .plot {
+    position: relative;
+    height: 170px;
+    margin-top: 12px;
+  }
+
+  .grid {
+    position: absolute;
+    inset: 0 0 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  .grid span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-3);
+    height: 0;
+  }
+
+  .grid span::before {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  .bars {
+    position: absolute;
+    inset: 0 22px 0 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .bar-slot {
+    flex: 1;
+    width: 50%;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 22px;
+    margin-bottom: -22px;
+  }
+
+  .bar-slot i {
+    width: 100%;
+    height: calc(var(--v) / 4 * 100%);
+    border-radius: 5px 5px 2px 2px;
+    background: var(--light);
+    transform-origin: bottom;
+    transform: scaleY(0);
+    transition: transform 0.8s var(--spring);
+    transition-delay: calc(0.15s + var(--i) * 0.06s);
+  }
+
+  .win.is-live .bar-slot i {
+    transform: scaleY(1);
+  }
+
+  .bar-col span {
+    height: 22px;
+    display: grid;
+    place-items: end center;
+    font-size: 11px;
+    color: var(--text-2);
+  }
+
+  .bar-col span.today {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* MARK: Sounds pane */
+
+  .seg-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .segmented {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.06);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+  }
+
+  .segmented button {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    transition: color 0.25s;
+  }
+
+  .segmented button :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .segmented button[aria-selected='true'] {
+    color: var(--on-gold);
+  }
+
+  .seg-thumb {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    border-radius: 999px;
+    background: var(--gold);
+    transition: transform 0.45s var(--spring), background-color 0.3s;
+  }
+
+  .segmented[data-active='close'] .seg-thumb {
+    transform: translateX(100%);
+    background: var(--lilac);
+  }
+
+  .sp {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .sp[hidden] {
+    display: none;
+  }
+
+  .toggle-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .toggle-card > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .toggle-card strong {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .toggle-card span:not(.badge) {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .sp-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: opacity 0.25s;
+  }
+
+  .sp-body.is-off {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .count {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .tile-wrap {
+    position: relative;
+  }
+
+  .tile {
+    width: 100%;
+    height: 100%;
+    min-height: 136px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 12px 12px 46px;
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    transition: transform 0.35s var(--spring), background-color 0.2s, box-shadow 0.25s;
+  }
+
+  .tile:hover {
+    background: var(--card-hover);
+    transform: scale(1.02);
+  }
+
+  .tile:active {
+    transform: scale(0.96);
+    transition-duration: 0.12s;
+  }
+
+  .tile[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--tint) 10%, transparent);
+    box-shadow: 0 0 0 2px var(--tint) inset;
+  }
+
+  .tile-top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .tile-icon {
+    transition: transform 0.4s var(--spring);
+  }
+
+  .tile:hover .tile-icon {
+    transform: rotate(-8deg) scale(1.08);
+  }
+
+  .tile.bounce .tile-icon {
+    animation: bounce 0.5s var(--spring);
+  }
+
+  @keyframes bounce {
+    35% {
+      transform: scale(1.25);
+    }
+  }
+
+  .tile-wrap:has(.is-playing) .tile-icon {
+    animation: dance 0.7s ease-in-out infinite;
+  }
+
+  @keyframes dance {
+    25% { transform: rotate(-7deg) scale(1.05); }
+    75% { transform: rotate(7deg) scale(1.05); }
+  }
+
+  .check {
+    width: 20px;
+    height: 20px;
+    color: var(--tint);
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 0.2s, transform 0.4s var(--spring);
+  }
+
+  .check :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .tile[aria-pressed='true'] .check {
+    opacity: 1;
+    transform: none;
+  }
+
+  .tile-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .tile-sub {
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-2);
+  }
+
+  .tile-wrap :global(.tile-play) {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .made {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .sp.enter .tile-wrap {
+    animation: tile-in 0.5s var(--spring) both;
+  }
+
+  @keyframes tile-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94) translateY(8px);
+    }
+  }
+
+  /* MARK: Settings pane (grouped form) */
+
+  .form-group {
+    border-radius: 12px;
+    background: rgb(255 255 255 / 0.04);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06) inset;
+  }
+
+  .frow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 10px 14px;
+  }
+
+  .frow + .frow {
+    border-top: 1px solid rgb(255 255 255 / 0.06);
+  }
+
+  .frow.is-off {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* System Settings style: a white symbol on a colored square */
+  .sicon {
+    width: 24px;
+    height: 24px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    color: #fff;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--c) 80%, #fff), var(--c));
+  }
+
+  .sicon :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  .ftext {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+  }
+
+  .ftext small {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .fctl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .fctl.vol {
+    width: 260px;
+  }
+
+  .mini-seg {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 7px;
+    background: rgb(255 255 255 / 0.07);
+  }
+
+  .mini-seg button {
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .mini-seg button[aria-checked='true'] {
+    color: var(--text);
+    background: rgb(255 255 255 / 0.16);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  }
+
+  .very-low {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--mint);
+  }
+
+  .form-foot {
+    margin: -4px 4px 0;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  [data-feel].buzz {
+    animation: buzz 0.3s linear;
+  }
+
+  @keyframes buzz {
+    20%, 60% { translate: -2px 0; }
+    40%, 80% { translate: 2px 0; }
+  }
+
+  /* Filled icons have built-in padding, so they sit a little larger in their badges */
+  .app-root :global(.badge > svg) {
+    width: 58%;
+    height: 58%;
+  }
+
+  .eyebrow :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* MARK: Smaller screens */
+
+  @media (max-width: 820px) {
+    .win {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      height: calc(100% - 32px - 26px);
+      margin: 14px 12px 12px;
+    }
+
+    .side {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-right: 0;
+      border-bottom: 1px solid rgb(255 255 255 / 0.06);
+    }
+
+    .lights,
+    .brand {
+      display: none;
+    }
+
+    .side-nav {
+      flex: 1;
+      flex-direction: row;
+    }
+
+    .side-row {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .side-hl {
+      top: 0;
+      right: auto;
+    }
+
+    .toolbar {
+      display: none;
+    }
+
+    .stat-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tiles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .menu {
+      right: 50%;
+      width: min(360px, calc(100% - 16px));
+      translate: 50% 0;
+      transform-origin: top center;
+    }
+
+    .bar-left span {
+      display: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .page {
+      padding: 14px 12px 20px;
+    }
+
+    /* The app's compact layout: logo and switch on top, text below */
+    .ov-hero {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .ov-text {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .ov-hero .switch {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .ov-hero :global(.ov-logo) {
+      width: 52px;
+      height: 52px;
+    }
+
+    .headline {
+      height: auto;
+      min-height: 26px;
+      font-size: 17px;
+    }
+
+    .hl-text {
+      white-space: normal;
+    }
+
+    .frow {
+      flex-wrap: wrap;
+    }
+
+    .fctl,
+    .fctl.vol {
+      width: 100%;
+      padding-left: 36px;
+    }
+
+    .side-row {
+      font-size: 13px;
+      gap: 6px;
+      padding: 0 4px;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { getState, play, setState, subscribe, type HapticStrength } from '../scripts/audio';
+  import { openGroups, closeGroup, allSounds, type SoundId } from '../data/sounds';
+  import { sparkle, tintColor } from '../scripts/sparkle';
+  import { roll, pickOther } from '../scripts/dice';
+  import { adjusted, hapticPattern } from '../scripts/haptics';
+
+  const $ = <T extends Element>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
+  const $$ = <T extends Element>(sel: string, root: ParentNode = document) => [...root.querySelectorAll<T>(sel)];
+  const section = $<HTMLElement>('[data-app-root]');
+  const desk = $<HTMLElement>('[data-desk]', section);
+  const win = $<HTMLElement>('[data-win]', section);
+  const menu = $<HTMLElement>('[data-menu]', section);
+  const menuToggle = $<HTMLButtonElement>('[data-menu-toggle]', section);
+  const tints: Record<string, string> = JSON.parse($<HTMLElement>('[data-tints]').textContent ?? '{}');
+  const titleOf = (id: string) => allSounds.find((s) => s.id === id)?.title ?? id;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // MARK: Fit. The desk is drawn at a fixed size (1000 px wide) and scaled to the Mac screen it sits in.
+  // On small screens it fills the screen at its natural size instead, in the app's compact layout.
+  const compactQuery = window.matchMedia('(max-width: 820px)');
+  const screenBox = section;
+  const fitDesk = () => {
+    const width = screenBox.clientWidth;
+    const height = screenBox.clientHeight;
+    if (!width || !height) return;
+    const k = compactQuery.matches ? Math.min(1, width / 400) : width / 1000;
+    desk.style.setProperty('--k', String(k));
+    desk.style.setProperty('--dw', `${width / k}px`);
+    desk.style.setProperty('--dh', `${height / k}px`);
+  };
+  fitDesk();
+  new ResizeObserver(fitDesk).observe(screenBox);
+  compactQuery.addEventListener('change', fitDesk);
+
+  // The window "comes alive" (counters, chart) once the lid has opened and the desk shows.
+  let live = false;
+  const goLive = () => {
+    if (live) return;
+    live = true;
+    win.classList.add('is-live');
+    countUp();
+  };
+  if ((window as unknown as { __deskLive?: boolean }).__deskLive) goLive();
+  window.addEventListener('lidshutter:desk-live', goLive);
+
+  // MARK: Clock
+  $('[data-desk-clock]', section).textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+  // MARK: Panes, with the app's sliding highlight and page slide.
+  const order = ['overview', 'sounds', 'settings'];
+  const rows = $$<HTMLButtonElement>('[data-pane]', section);
+  const hl = $<HTMLElement>('[data-side-hl]', section);
+  const pages = $<HTMLElement>('[data-pages]', section);
+  const paneTitle = $<HTMLElement>('[data-pane-title]', section);
+  let pane = 'overview';
+
+  function placeHighlight() {
+    const row = rows.find((r) => r.dataset.pane === pane)!;
+    hl.style.width = `${row.offsetWidth}px`;
+    hl.style.height = `${row.offsetHeight}px`;
+    hl.style.transform = `translate(${row.offsetLeft}px, ${row.offsetTop}px)`;
+  }
+
+  function selectPane(next: string) {
+    if (next === pane) return;
+    const fromBelow = order.indexOf(next) > order.indexOf(pane);
+    const oldPage = $<HTMLElement>(`[data-page="${pane}"]`, section);
+    const newPage = $<HTMLElement>(`[data-page="${next}"]`, section);
+    pane = next;
+    rows.forEach((r) => (r.dataset.pane === next ? r.setAttribute('aria-current', 'page') : r.removeAttribute('aria-current')));
+    placeHighlight();
+    paneTitle.textContent = rows.find((r) => r.dataset.pane === next)!.textContent!.trim();
+
+    oldPage.hidden = true;
+    newPage.hidden = false;
+    pages.scrollTop = 0;
+    if (!reduceMotion) {
+      gsap.fromTo(newPage, { y: fromBelow ? 36 : -36, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.2)' });
+      gsap.fromTo(paneTitle, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3 });
+    }
+    if (next === 'sounds') enterTiles();
+  }
+
+  rows.forEach((r) => r.addEventListener('click', () => selectPane(r.dataset.pane!)));
+  $$<HTMLElement>('[data-goto]', section).forEach((b) => b.addEventListener('click', () => selectPane(b.dataset.goto!)));
+  placeHighlight();
+  window.addEventListener('resize', placeHighlight);
+
+  // Links elsewhere on the page can open a pane, e.g. <a href="#app" data-app-pane="sounds">.
+  document.addEventListener('click', (e) => {
+    const link = (e.target as Element).closest('[data-app-pane]') as HTMLElement | null;
+    if (link) selectPane(link.dataset.appPane!);
+  });
+
+  // MARK: Menu bar menu
+  const setMenu = (open: boolean) => {
+    menu.classList.toggle('is-closed', !open);
+    menuToggle.setAttribute('aria-expanded', String(open));
+    if (open) menuToggle.classList.add('was-opened');
+  };
+  menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setMenu(menu.classList.contains('is-closed'));
+  });
+  document.addEventListener('click', (e) => {
+    if (!menu.classList.contains('is-closed') && !menu.contains(e.target as Node)) setMenu(false);
+  });
+  $('[data-open-dashboard]', section).addEventListener('click', () => {
+    setMenu(false);
+    selectPane('overview');
+    win.classList.add('flash');
+    setTimeout(() => win.classList.remove('flash'), 700);
+  });
+
+  const quips = ['Nice try. The shop never closes.', 'You can quit the real app. Here, we’re open 24/7.', 'Closing time? Not on our watch.'];
+  let quip = 0;
+  $('[data-quit]', section).addEventListener('click', () => {
+    menu.classList.remove('shake');
+    void menu.offsetWidth;
+    menu.classList.add('shake');
+    $('[data-quit-tip]', section).textContent = quips[quip++ % quips.length];
+  });
+
+  // MARK: Controls bound to the shared state (menu, Overview, Sounds and Settings stay in sync)
+  type BoolKey = 'enabled' | 'playOnOpen' | 'playOnClose' | 'haptics';
+  $$<HTMLButtonElement>('[data-bind]', section).forEach((sw) =>
+    sw.addEventListener('click', () => {
+      const key = sw.dataset.bind as BoolKey;
+      setState({ [key]: !getState()[key] });
+    }),
+  );
+
+  $$<HTMLSelectElement>('[data-pick]', section).forEach((sel) =>
+    sel.addEventListener('change', () => {
+      const id = sel.value as SoundId;
+      setState(sel.dataset.pick === 'close' ? { closeSound: id } : { openSound: id });
+      play(id);
+    }),
+  );
+
+  $$<HTMLInputElement>('[data-volume]', section).forEach((v) => v.addEventListener('input', () => setState({ volume: Number(v.value) })));
+
+  // Both "only if closed" pickers and both "open at login" controls mirror each other.
+  const delaySelects = $$<HTMLSelectElement>('[data-delay]', section);
+  delaySelects.forEach((s) => s.addEventListener('change', () => delaySelects.forEach((o) => (o.value = s.value))));
+  const loginCheck = $<HTMLInputElement>('[data-login-check]', section);
+  const loginSwitch = $<HTMLButtonElement>('[data-login]', section);
+  const setLogin = (on: boolean) => {
+    loginCheck.checked = on;
+    loginSwitch.setAttribute('aria-checked', String(on));
+  };
+  loginCheck.addEventListener('change', () => setLogin(loginCheck.checked));
+  loginSwitch.addEventListener('click', () => setLogin(loginSwitch.getAttribute('aria-checked') !== 'true'));
+
+  // Vibration strength + "Feel it" (a phone that can vibrate feels the pattern).
+  const strength = $$<HTMLButtonElement>('[data-strength] [data-value]', section);
+  strength.forEach((b) => b.addEventListener('click', () => setState({ hapticStrength: b.dataset.value as HapticStrength })));
+  const feel = $<HTMLButtonElement>('[data-feel]', section);
+  feel.addEventListener('click', () => {
+    feel.classList.remove('buzz');
+    void feel.offsetWidth;
+    feel.classList.add('buzz');
+    const taps = adjusted(hapticPattern(getState().openSound, 1.6), getState().hapticStrength);
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate(taps.flatMap(([, strong], i) => (i ? [40, strong ? 30 : 12] : [strong ? 30 : 12])));
+      } catch {
+        /* not allowed */
+      }
+    }
+  });
+
+  // Dice on each menu card: a different random sound, selected and played.
+  const openIds = openGroups.flatMap((g) => g.sounds.map((s) => s.id));
+  const closeIds = closeGroup.sounds.map((s) => s.id);
+  $$<HTMLElement>('[data-roll]', section).forEach((dice) =>
+    dice.addEventListener('click', () => {
+      if (!roll(dice)) return;
+      const kind = dice.dataset.roll;
+      const s = getState();
+      const id = kind === 'close' ? pickOther(closeIds, s.closeSound) : pickOther(openIds, s.openSound);
+      setState(kind === 'close' ? { closeSound: id } : { openSound: id });
+      play(id);
+      const badge = $<HTMLElement>(`[data-row-badge="${kind}"]`, section);
+      sparkle(badge, tintColor(badge), 0.8);
+    }),
+  );
+
+  // MARK: Sound tiles
+  const seg = $<HTMLElement>('[data-seg]', section);
+  const tabs = $$<HTMLButtonElement>('[data-tab]', section);
+  function showTab(id: string) {
+    seg.dataset.active = id;
+    tabs.forEach((t) => {
+      const on = t.dataset.tab === id;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    $$<HTMLElement>('[data-sp]', section).forEach((p) => (p.hidden = p.dataset.sp !== id));
+    enterTiles();
+  }
+  tabs.forEach((t) => t.addEventListener('click', () => showTab(t.dataset.tab!)));
+
+  function enterTiles() {
+    if (reduceMotion) return;
+    const panel = $<HTMLElement>(`[data-sp="${seg.dataset.active ?? 'open'}"]`, section);
+    panel.classList.remove('enter');
+    void panel.offsetWidth;
+    panel.classList.add('enter');
+    $$<HTMLElement>('.tile-wrap', panel).forEach((t, i) => (t.style.animationDelay = `${Math.min(i, 12) * 30}ms`));
+  }
+
+  $$<HTMLElement>('[data-select]', section).forEach((tile) =>
+    tile.addEventListener('click', () => {
+      const id = tile.dataset.select as SoundId;
+      setState(tile.dataset.kind === 'close' ? { closeSound: id } : { openSound: id });
+      play(id);
+      tile.classList.remove('bounce');
+      void tile.offsetWidth;
+      tile.classList.add('bounce');
+      sparkle($('.tile-icon', tile), tintColor(tile));
+    }),
+  );
+
+  // MARK: Overview: greeting, rotating headline, counters, day labels
+  const hour = new Date().getHours();
+  const [greetText, greetIco, greetTint] =
+    hour >= 5 && hour < 12 ? ['Good morning', 'sun', 'gold'] : hour >= 12 && hour < 17 ? ['Good afternoon', 'haze', 'coral'] : ['Good evening', 'moon', 'lilac'];
+  const greet = $<HTMLElement>('[data-greet]', section);
+  greet.dataset.tint = greetTint;
+  $('[data-greet-text]', section).textContent = greetText;
+  $$<HTMLElement>('[data-greet-ico]', section).forEach((i) => (i.hidden = i.dataset.greetIco !== greetIco));
+
+  $$<HTMLElement>('[data-day]', section).forEach((el, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    el.textContent = d.toLocaleDateString([], { weekday: 'short' });
+    el.classList.toggle('today', i === 6);
+  });
+
+  function countUp() {
+    $$<HTMLElement>('[data-count]', section).forEach((el, i) => {
+      const target = Number(el.dataset.count);
+      if (reduceMotion) {
+        el.textContent = target.toLocaleString();
+        return;
+      }
+      const o = { v: 0 };
+      gsap.to(o, { v: target, duration: 1.1, delay: 0.1 + i * 0.07, ease: 'power3.out', onUpdate: () => (el.textContent = Math.round(o.v).toLocaleString()) });
+    });
+  }
+
+  // The app's friendly headline: a few lines that rotate every 7 s, or on click.
+  const headline = $<HTMLButtonElement>('[data-headline]', section);
+  const headlineText = $<HTMLElement>('[data-headline-text]', section);
+  const dots = $<HTMLElement>('[data-dots]', section);
+  let lineIndex = 0;
+  let hovering = false;
+  const lines = () =>
+    getState().enabled
+      ? [
+          '7 days in a row. Keep the streak alive!',
+          'You’ve opened your Mac 3 times today',
+          '3 opens today. Nice rhythm!',
+          'Back again! That’s open number 3 today',
+          `${titleOf(getState().openSound)} is ready for your next open`,
+        ]
+      : ['LidShutter is taking a nap', 'Shh… sounds are paused', 'Flip the switch to wake me up'];
+
+  function showLine(index: number, animate = true) {
+    const list = lines();
+    lineIndex = ((index % list.length) + list.length) % list.length;
+    const apply = () => {
+      headlineText.textContent = list[lineIndex];
+      dots.replaceChildren(
+        ...list.map((_, i) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.setAttribute('aria-label', `Message ${i + 1}`);
+          if (i === lineIndex) b.className = 'on';
+          b.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showLine(i);
+          });
+          return b;
+        }),
+      );
+    };
+    if (!animate || reduceMotion) return apply();
+    gsap
+      .timeline()
+      .to(headlineText, { y: -16, opacity: 0, duration: 0.18, ease: 'power2.in' })
+      .call(apply)
+      .fromTo(headlineText, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' });
+  }
+  showLine(0, false);
+  headline.addEventListener('click', () => showLine(lineIndex + 1));
+  headline.addEventListener('pointerenter', () => (hovering = true));
+  headline.addEventListener('pointerleave', () => (hovering = false));
+  setInterval(() => {
+    if (live && !hovering && pane === 'overview' && document.visibilityState === 'visible') showLine(lineIndex + 1);
+  }, 7000);
+
+  // MARK: Render shared state into every control
+  let lastEnabled = true;
+  subscribe((s) => {
+    $$<HTMLButtonElement>('[data-bind]', section).forEach((sw) => sw.setAttribute('aria-checked', String(s[sw.dataset.bind as BoolKey])));
+    $$<HTMLElement>('[data-status]', section).forEach((st) => {
+      st.classList.toggle('is-paused', !s.enabled);
+      $('[data-status-text]', st).textContent = s.enabled ? 'Active' : 'Paused';
+    });
+    menu.classList.toggle('is-disabled', !s.enabled);
+    if (s.enabled !== lastEnabled) {
+      lastEnabled = s.enabled;
+      showLine(0);
+    }
+
+    $$<HTMLElement>('[data-row]', section).forEach((r) =>
+      r.classList.toggle('is-off', !(r.dataset.row === 'open' ? s.playOnOpen : s.playOnClose)),
+    );
+    $$<HTMLElement>('[data-sp-body]', section).forEach((b) =>
+      b.classList.toggle('is-off', !(b.dataset.spBody === 'open' ? s.playOnOpen : s.playOnClose)),
+    );
+    $<HTMLElement>('[data-haptic-row]', section).classList.toggle('is-off', !s.haptics);
+
+    // Chosen sounds: menu pickers, icons, Your Sounds rows and tile checkmarks.
+    $$<HTMLSelectElement>('[data-pick]', section).forEach((sel) => (sel.value = sel.dataset.pick === 'close' ? s.closeSound : s.openSound));
+    const chosen = { open: s.openSound, close: s.closeSound };
+    (['open', 'close'] as const).forEach((kind) => {
+      const id = chosen[kind];
+      [$<HTMLElement>(`[data-row-badge="${kind}"]`, section), $<HTMLElement>(`[data-ys-badge="${kind}"]`, section)].forEach((badge) => {
+        const changed = badge.dataset.current && badge.dataset.current !== id;
+        badge.dataset.current = id;
+        badge.dataset.tint = tints[id];
+        $$<HTMLElement>('[data-ico]', badge).forEach((i) => i.classList.toggle('show', i.dataset.ico === id));
+        if (changed && !reduceMotion) {
+          badge.classList.remove('pop');
+          void badge.offsetWidth;
+          badge.classList.add('pop');
+        }
+      });
+      $(`[data-ys-title="${kind}"]`, section).textContent = titleOf(id);
+    });
+    $$<HTMLElement>('[data-select]', section).forEach((t) =>
+      t.setAttribute('aria-pressed', String(t.dataset.select === (t.dataset.kind === 'close' ? s.closeSound : s.openSound))),
+    );
+
+    // Volume sliders and their percentages.
+    $$<HTMLInputElement>('[data-volume]', section).forEach((v) => {
+      if (document.activeElement !== v) v.value = String(s.volume);
+      v.style.setProperty('--fill', `${(s.volume / 2) * 100}%`);
+    });
+    $$<HTMLElement>('[data-pct]', section).forEach((p) => {
+      p.textContent = `${Math.round(s.volume * 100)}%`;
+      p.classList.toggle('is-boosted', s.volume > 1.001);
+    });
+
+    strength.forEach((b) => b.setAttribute('aria-checked', String(b.dataset.value === s.hapticStrength)));
+  });
+</script>

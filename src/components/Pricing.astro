@@ -1,0 +1,894 @@
+---
+// A tiny shop that opens as you scroll to it, with the price on a swinging tag.
+import { site, pricing, currentTier, formatUsd } from '../data/site';
+import Glyph from './Glyph.astro';
+import FaceField from './FaceField.astro';
+
+// The page starts with these dollar prices; src/scripts/pricing.ts then fills in the visitor's
+// currency and the live number of slots sold.
+const slots = Array.from({ length: pricing.slotsPerTier }, (_, i) => i < currentTier.taken);
+const left = currentTier.left;
+const showPacks = currentTier.launchOver || pricing.showPacksDuringLaunch;
+
+const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
+---
+
+<section class="section pricing-section" id="pricing" aria-label={`Pricing: ${site.price}`}>
+  <FaceField variant="pricing" />
+  <div class="container">
+    <div class="shop" data-shop>
+      <div class="awning" aria-hidden="true"></div>
+
+      <div class="facade">
+        <div class="window">
+          <div class="inside">
+            <div class="light" aria-hidden="true"></div>
+            <span class="neon" data-neon aria-hidden="true">OPEN</span>
+
+            <div class="shelf top" aria-hidden="true">
+              {jars.slice(0, 4).map((t, i) => <i data-tint={t} style={`--i:${i}`} />)}
+            </div>
+            <div class="shelf low" aria-hidden="true">
+              {jars.slice(4).map((t, i) => <i data-tint={t} style={`--i:${i + 4}`} />)}
+            </div>
+
+            <!-- The price tag, hanging on a string -->
+            <button type="button" class="tag" data-tag aria-label={`LidShutter costs ${site.price}`}>
+              <span class="string" aria-hidden="true"></span>
+              <span class="card">
+                <span class="hole" aria-hidden="true"></span>
+                <span class="only" data-price-label>Launch price</span>
+                <span class="price" data-price>{site.price}</span>
+              </span>
+            </button>
+
+            <!-- The counter: launch slots and the price ladder -->
+            <div class="counter">
+              <div class="slots" data-slots>
+                <span class="slot-row" aria-hidden="true">
+                  {slots.map((taken, i) => <i class:list={[{ taken }]} style={`--i:${i}`} />)}
+                </span>
+                <span class="slot-text" data-slot-text>
+                  <b>{left} of {pricing.slotsPerTier}</b> left at <span data-usd={currentTier.usd}>{site.price}</span>
+                  {currentTier.nextUsd && <> · then <span data-usd={currentTier.nextUsd}>{formatUsd(currentTier.nextUsd)}</span></>}
+                </span>
+              </div>
+              <ol class="ladder" aria-label="Launch price steps">
+                {
+                  pricing.tiers.map((t, i) => (
+                    <li data-step={i} data-usd={t} class:list={[{ now: i === currentTier.index, past: i < currentTier.index }]}>{formatUsd(t)}</li>
+                  ))
+                }
+              </ol>
+            </div>
+            <button type="button" class="bell" data-bell aria-label="Ring the shop bell">
+              <svg viewBox="0 0 80 56" aria-hidden="true">
+                <rect x="34" y="2" width="12" height="8" rx="4" fill="#d9d9de" />
+                <path d="M10 44 C 10 20, 70 20, 70 44 Z" fill="url(#bell-metal)" />
+                <rect x="4" y="44" width="72" height="9" rx="4.5" fill="#3a3a42" />
+                <defs>
+                  <linearGradient id="bell-metal" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0" stop-color="#fff6cc" />
+                    <stop offset="0.5" stop-color="#ffc247" />
+                    <stop offset="1" stop-color="#b77a12" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="ding" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <!-- The shutter that rolls up as you arrive -->
+          <div class="shutter" data-shop-shutter aria-hidden="true"><span class="handle"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buy -->
+    <div class="buy">
+      <a class="buy-btn" href={`/api/checkout?macs=1&expect=${currentTier.usd.toFixed(2)}`} data-buy-link data-macs="1">
+        <span>Buy LidShutter</span>
+        <b data-buy-price>{site.price}</b>
+      </a>
+      <p class="buy-meta">
+        <span class="chip" data-launch-chip>Launch pricing</span>
+        <span data-launch-note>Launch pricing: {left} of {pricing.slotsPerTier} left at {site.price}{currentTier.nextUsd ? `, then ${formatUsd(currentTier.nextUsd)}` : ''}.</span>
+      </p>
+      <p class="buy-fine">One key activates one Mac. Pay once, no subscription.</p>
+      <p class="buy-fine" data-region-note hidden></p>
+      <p class="buy-alert" data-buy-alert role="status" hidden></p>
+    </div>
+
+    <!-- More Macs: one key for 2 to 10 Macs -->
+    <div class="packs" data-packs hidden={!showPacks}>
+      <h3>More than one Mac?</h3>
+      <p class="packs-lead">One key that activates on up to 10 Macs. The more Macs, the less each one costs.</p>
+      <ul class="pack-grid">
+        {
+          pricing.packs.map((p) => (
+            <li>
+              <a class="pack" href={`/api/checkout?macs=${p.macs}&expect=${p.usd.toFixed(2)}`} data-buy-link data-macs={p.macs}>
+                <span class="pack-macs">{p.macs} Macs</span>
+                <b class="pack-price" data-usd={p.usd}>{formatUsd(p.usd)}</b>
+                <span class="pack-per" data-usd={p.usd} data-per-mac={p.macs}>{formatUsd(p.usd / p.macs)} per Mac</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <p class="packs-hint" data-packs-hint hidden={showPacks}>
+      Need it on 2 to 10 Macs? Multi-Mac packs open when launch pricing ends.
+    </p>
+
+    <!-- What the one payment gets you -->
+    <div class="perks">
+      <div class="perk">
+        <span class="upd-icon" aria-hidden="true"><Glyph name="shield-check" /></span>
+        <span class="upd-text"><b>Works offline.</b> Internet is needed only to activate. After that it works offline.</span>
+      </div>
+      <div class="perk lifetime">
+        <span class="upd-icon" aria-hidden="true"><Glyph name="infinity" /></span>
+        <span class="upd-text"><b>Lifetime license.</b> Pay once, it’s yours forever. No subscription.</span>
+      </div>
+      <a href="/changelog" class="perk updates">
+        <span class="upd-icon" aria-hidden="true"><Glyph name="arrows-clockwise" /></span>
+        <span class="upd-text"><b>Free updates included.</b> New sounds and features, from time to time.</span>
+        <span class="upd-link">What’s new →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section.pricing-section {
+    position: relative;
+    padding-top: clamp(64px, 7.5vw, 104px);
+  }
+
+  /* Buy button and launch note */
+  .buy {
+    margin: 30px auto 0;
+    max-width: 560px;
+    text-align: center;
+  }
+
+  .buy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-width: min(100%, 320px);
+    padding: 16px 28px;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--on-gold);
+    background: var(--light);
+    box-shadow: 0 0 0 1px rgb(194 122 0 / 0.25) inset, 0 14px 34px -12px rgb(255 160 40 / 0.65);
+    transition: transform 0.35s var(--spring), box-shadow 0.3s;
+  }
+
+  .buy-btn b {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+    background: rgb(255 255 255 / 0.55);
+  }
+
+  .buy-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 0 1px rgb(194 122 0 / 0.35) inset, 0 18px 40px -12px rgb(255 160 40 / 0.8);
+  }
+
+  .buy-btn:active {
+    transform: scale(0.97);
+  }
+
+  .buy-meta {
+    margin: 16px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 10px;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+
+  .chip {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--on-gold);
+    background: rgb(255 194 71 / 0.35);
+  }
+
+  .buy-fine {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .buy-alert {
+    margin: 14px 0 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #8a2d12;
+    background: rgb(255 120 84 / 0.14);
+    box-shadow: 0 0 0 1px rgb(255 120 84 / 0.35) inset;
+  }
+
+  .buy [hidden],
+  .packs[hidden],
+  .packs-hint[hidden] {
+    display: none;
+  }
+
+  /* More Macs */
+  .packs {
+    margin: 44px auto 0;
+    max-width: 880px;
+    text-align: center;
+  }
+
+  .packs h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3vw, 28px);
+    letter-spacing: -0.02em;
+  }
+
+  .packs-lead {
+    margin: 8px 0 22px;
+    color: var(--text-2);
+  }
+
+  .pack-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* 9 packs: a lone last card spans the row on phones, and three even rows from tablets up. */
+  .pack-grid > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 520px) {
+    .pack-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .pack-grid > :last-child:nth-child(odd) {
+      grid-column: auto;
+    }
+  }
+
+  .pack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 16px 12px;
+    border-radius: var(--r-tile);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    transition: transform 0.35s var(--spring), background-color 0.2s, box-shadow 0.2s;
+  }
+
+  .pack:hover {
+    background: var(--card-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 2px var(--gold) inset, var(--shadow);
+  }
+
+  .pack-macs {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .pack-price {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pack-per {
+    font-size: 12.5px;
+    color: var(--text-3);
+  }
+
+  .packs-hint {
+    margin: 26px 0 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  /* Above the shop crew floating beside it */
+  .pricing-section > .container {
+    position: relative;
+    z-index: 2;
+  }
+
+  .perks {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .perk {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 100%;
+    padding: 10px 18px 10px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    color: var(--text-2);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+  }
+
+  .updates {
+    padding-right: 10px;
+    transition: background-color 0.2s, transform 0.35s var(--spring);
+  }
+
+  .updates:hover {
+    background: var(--card-hover);
+    transform: translateY(-2px);
+  }
+
+  .upd-icon {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #138a4b;
+    background: rgb(97 217 153 / 0.2);
+  }
+
+  /* Gold for the license, like the price tag */
+  .lifetime .upd-icon {
+    color: #a86400;
+    background: rgb(255 194 71 / 0.24);
+  }
+
+  .upd-icon :global(svg) {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.7s var(--spring);
+  }
+
+  /* The arrows spin round on hover, like an update arriving */
+  .updates:hover .upd-icon :global(svg) {
+    transform: rotate(360deg);
+  }
+
+  .upd-text b {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .upd-link {
+    flex: none;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--fill);
+  }
+
+  @media (max-width: 640px) {
+    .perk {
+      border-radius: 18px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .perk {
+      width: 100%;
+    }
+
+    /* Text takes the row; the link drops underneath it */
+    .upd-text {
+      flex: 1 1 calc(100% - 42px);
+      min-width: 0;
+    }
+
+    .upd-link {
+      margin-left: 42px;
+    }
+  }
+
+  .shop {
+    position: relative;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  /* Striped awning with a scalloped edge */
+  .awning {
+    --stripes: repeating-linear-gradient(90deg, var(--gold) 0 56px, #fff3d6 56px 112px);
+    position: relative;
+    z-index: 3;
+    height: clamp(48px, 7vw, 72px);
+    margin: 0 -2%;
+    border-radius: 18px 18px 0 0;
+    background: var(--stripes);
+    box-shadow: 0 18px 30px -12px rgb(0 0 0 / 0.6);
+    transform-origin: 50% 0;
+    animation: awning 5s ease-in-out infinite;
+  }
+
+  .awning::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 22px;
+    background: var(--stripes);
+    -webkit-mask: radial-gradient(circle 28px at 28px 0, #000 98%, transparent) 0 0 / 56px 22px repeat-x;
+    mask: radial-gradient(circle 28px at 28px 0, #000 98%, transparent) 0 0 / 56px 22px repeat-x;
+  }
+
+  @keyframes awning {
+    50% {
+      transform: scaleY(1.03);
+    }
+  }
+
+  .facade {
+    padding: clamp(14px, 2.4vw, 26px);
+    border-radius: 0 0 26px 26px;
+    background: linear-gradient(180deg, #2b2016, #1e1610);
+    box-shadow: 0 0 0 1px rgb(255 194 71 / 0.12) inset, 0 50px 120px -40px rgb(255 160 40 / 0.35);
+  }
+
+  .window {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 0 6px #3a2a1c, inset 0 0 40px rgb(0 0 0 / 0.5);
+    container-type: size;
+  }
+
+  .inside {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(80% 90% at 50% 30%, #ffd98a, #f2a33a 45%, #6b3a12 100%);
+  }
+
+  .light {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(40% 50% at 50% 10%, rgb(255 255 255 / 0.5), transparent 70%),
+      repeating-linear-gradient(100deg, transparent 0 6cqw, rgb(255 255 255 / 0.04) 6cqw 7cqw);
+    opacity: 0.6;
+  }
+
+  .neon {
+    position: absolute;
+    left: 6cqw;
+    top: 7cqh;
+    padding: 0.8cqw 1.8cqw;
+    border: 0.5cqw solid currentColor;
+    border-radius: 2cqw;
+    /* A dark board behind the tubes, so the pink pops against the warm shop */
+    background: #2a1408;
+    outline: 1.1cqw solid #2a1408;
+    box-shadow: 0 1.2cqw 2.4cqw rgb(60 25 0 / 0.5);
+    font-family: var(--font-display);
+    font-size: 4cqw;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: rgb(255 115 179 / 0.25);
+    rotate: -6deg;
+    transition: color 0.1s, text-shadow 0.1s, box-shadow 0.1s;
+  }
+
+  .neon.on {
+    color: #ffa3d1;
+    text-shadow: 0 0 1cqw #ff73b3, 0 0 3cqw #ff4fa2;
+    box-shadow: 0 0 1.2cqw #ff73b3, inset 0 0 1.2cqw rgb(255 115 179 / 0.6), 0 1.2cqw 2.4cqw rgb(60 25 0 / 0.5);
+  }
+
+  .shelf {
+    position: absolute;
+    right: 5cqw;
+    width: 26cqw;
+    height: 1.4cqh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    border-radius: 1cqw;
+    background: #7a4518;
+    box-shadow: 0 1cqh 1.5cqh rgb(0 0 0 / 0.25);
+  }
+
+  .shelf.top {
+    top: 24cqh;
+  }
+
+  .shelf.low {
+    top: 44cqh;
+  }
+
+  .shelf i {
+    width: 4.2cqw;
+    height: 7cqw;
+    margin-bottom: 1.4cqh;
+    border-radius: 1cqw 1cqw 0.8cqw 0.8cqw;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 60%, #fff), var(--tint));
+    box-shadow: inset 0 0.8cqw 0 rgb(255 255 255 / 0.35);
+    animation: jar 3.6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.45s);
+  }
+
+  @keyframes jar {
+    50% {
+      transform: translateY(-0.6cqw);
+    }
+  }
+
+  /* The price tag */
+  .tag {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 34cqw;
+    translate: -50% 0;
+    transform-origin: 50% 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .string {
+    width: 0.35cqw;
+    height: 14cqh;
+    background: #3b2a14;
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    padding: 4cqh 2cqw 3.6cqh;
+    border-radius: 2.4cqw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fffaf0;
+    box-shadow: 0 2cqh 4cqh rgb(80 40 0 / 0.45), inset 0 -0.6cqh 0 rgb(0 0 0 / 0.06);
+  }
+
+  .hole {
+    position: absolute;
+    top: 1.6cqh;
+    width: 2.2cqw;
+    height: 2.2cqw;
+    border-radius: 50%;
+    background: #6b3a12;
+    box-shadow: inset 0 0.3cqw 0.4cqw rgb(0 0 0 / 0.5);
+  }
+
+  .only {
+    margin-top: 1.6cqh;
+    font-size: 2cqw;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #a0701c;
+  }
+
+  .price {
+    font-family: var(--font-display);
+    font-size: 10cqw;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--rust);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Counter and bell */
+  .counter {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 22cqh;
+    display: flex;
+    align-items: center;
+    gap: 3cqw;
+    padding: 0 22cqw 0 5cqw;
+    background: linear-gradient(180deg, #a0601f, #6b3a12);
+    box-shadow: 0 -0.8cqh 0 #c0782a;
+  }
+
+  .slots {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2cqh;
+  }
+
+  .slot-row {
+    display: flex;
+    gap: 1cqw;
+  }
+
+  .slot-row i {
+    width: 4.6cqw;
+    height: 2.2cqw;
+    border-radius: 1.2cqw;
+    background: rgb(0 0 0 / 0.28);
+    box-shadow: inset 0 0.3cqw 0.5cqw rgb(0 0 0 / 0.35);
+  }
+
+  /* A taken slot lights up gold */
+  .slot-row i.taken {
+    background: linear-gradient(180deg, #fff3c4, #ffc247);
+    box-shadow: 0 0 1.2cqw rgb(255 194 71 / 0.7);
+  }
+
+  .slot-text {
+    font-size: 1.8cqw;
+    font-weight: 500;
+    color: #ffe9c2;
+    white-space: nowrap;
+  }
+
+  .slot-text b {
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .ladder {
+    list-style: none;
+    margin: 0 0 0 auto;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6cqw;
+  }
+
+  .ladder li {
+    padding: 0.6cqh 1.2cqw;
+    border-radius: 99px;
+    font-size: 1.7cqw;
+    font-weight: 700;
+    color: rgb(255 233 194 / 0.6);
+    background: rgb(0 0 0 / 0.2);
+  }
+
+  .ladder li.now {
+    color: var(--on-gold);
+    background: linear-gradient(180deg, #fff3c4, #ffc247);
+  }
+
+  .ladder li.past {
+    text-decoration: line-through;
+    opacity: 0.55;
+  }
+
+  .bell {
+    position: absolute;
+    right: 6cqw;
+    bottom: 18cqh;
+    width: 11cqw;
+    cursor: pointer;
+    transform-origin: 50% 100%;
+    /* `scale`, not `transform`, so the hover never fights GSAP's ring wobble */
+    transition: scale 0.3s var(--spring);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bell:hover {
+    scale: 1.08;
+  }
+
+  .bell svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ding {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    width: 100%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 0.4cqw solid #fff6cc;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .bell.ring .ding {
+    animation: ding 0.7s ease-out;
+  }
+
+  @keyframes ding {
+    from {
+      opacity: 0.9;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.8);
+    }
+  }
+
+  /* The shutter */
+  .shutter {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background:
+      linear-gradient(90deg, rgb(0 0 0 / 0.35), transparent 8%, transparent 92%, rgb(0 0 0 / 0.35)),
+      repeating-linear-gradient(180deg, #6b6b72 0, #8a8a92 1.6cqh, #5b5b62 4.2cqh, #3d3d43 4.8cqh, #6b6b72 5.4cqh);
+  }
+
+  .handle {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4.4cqh;
+    background: linear-gradient(180deg, #d0581c, var(--rust));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shutter {
+      display: none;
+    }
+
+    .awning,
+    .shelf i {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { play, audioUnlocked, whenUnlocked } from '../scripts/audio';
+  import { sparkle } from '../scripts/sparkle';
+  import { formatMoney } from '../lib/regionPrice';
+  import { state } from '../scripts/pricing';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const shop = document.querySelector<HTMLElement>('[data-shop]')!;
+  const shutter = shop.querySelector<HTMLElement>('[data-shop-shutter]')!;
+  const neon = shop.querySelector<HTMLElement>('[data-neon]')!;
+  const tag = shop.querySelector<HTMLElement>('[data-tag]')!;
+  const price = shop.querySelector<HTMLElement>('[data-price]')!;
+  const bell = shop.querySelector<HTMLButtonElement>('[data-bell]')!;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // The tag counts up to the visitor's price, in their currency. If the country or the live
+  // slot count arrive after the shop has opened, the tag just switches to the new price.
+  const showPrice = (v: number) =>
+    (price.textContent = formatMoney(v, state.price.digits, state.price.currency));
+  window.addEventListener('pricing:update', () => {
+    if (opened || reduceMotion) price.textContent = state.price.text;
+  });
+
+  const swing = (amount = 14) =>
+    gsap.fromTo(tag, { rotation: amount }, { rotation: 0, duration: 2.2, ease: 'elastic.out(1, 0.18)' });
+
+  // Once the shutter is up: neon flickers on, the tag drops in and the price rolls up.
+  let opened = false;
+  function openShop() {
+    if (opened) return;
+    opened = true;
+    gsap
+      .timeline()
+      .call(() => neon.classList.add('on'))
+      .call(() => neon.classList.remove('on'), [], 0.08)
+      .call(() => neon.classList.add('on'), [], 0.16)
+      .call(() => neon.classList.remove('on'), [], 0.22)
+      .call(() => neon.classList.add('on'), [], 0.34)
+      .fromTo(tag, { yPercent: -160 }, { yPercent: 0, duration: 0.7, ease: 'bounce.out' }, 0.1)
+      .add(swing(18), 0.75)
+      .fromTo({ v: 0 }, { v: 0 }, { v: () => state.price.value, duration: 0.9, ease: 'power3.out', onUpdate() { showPrice(this.targets()[0].v); }, onComplete() { price.textContent = state.price.text; } }, 0.3)
+      .call(() => sparkle(price, '#ffc247', 1.4), [], 1.1)
+      // The bell rings once by itself, so people see it's there to tap.
+      .call(greet, [], 0.55);
+  }
+
+  const inView = () => {
+    const r = shop.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight;
+  };
+
+  /**
+   * The one ring the bell gives by itself, when the shop first opens. Browsers hold audio back
+   * until the first click, tap or key press, so if that hasn't happened yet the ding plays on
+   * that first press, while the shop is still in view.
+   */
+  function greet() {
+    ring(false);
+    if (audioUnlocked()) return;
+    whenUnlocked(() => inView() && play('shopBell', { userInitiated: false }));
+  }
+
+  /** Rings the bell: on a tap, or once by itself through `greet`. */
+  function ring(userInitiated = true) {
+    play('shopBell', { userInitiated });
+    bell.classList.remove('ring');
+    void bell.offsetWidth;
+    bell.classList.add('ring');
+    if (!reduceMotion) {
+      gsap.fromTo(bell, { scaleY: 0.86 }, { scaleY: 1, duration: 0.5, ease: 'elastic.out(1.4, 0.3)' });
+      gsap.fromTo(bell, { rotation: -12 }, { rotation: 0, duration: 0.9, ease: 'elastic.out(1.2, 0.25)' });
+      swing(10);
+    }
+  }
+
+  if (reduceMotion) {
+    neon.classList.add('on');
+    const seen = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      seen.disconnect();
+      greet();
+    }, { threshold: 0.5 });
+    seen.observe(shop);
+  } else {
+    showPrice(0);
+    gsap.set(tag, { yPercent: -160 });
+    gsap.fromTo(
+      shutter,
+      { yPercent: 0 },
+      {
+        yPercent: -101,
+        ease: 'power1.in',
+        scrollTrigger: {
+          trigger: shop,
+          start: 'top 80%',
+          // Ends early enough that even a tall screen at the very bottom of the page gets there.
+          end: 'top 40%',
+          scrub: true,
+          onUpdate: (self) => self.progress > 0.9 && openShop(),
+          onLeave: openShop,
+          // Reloading already at (or past) the shop opens it, and rings the bell, straight away.
+          onRefresh: (self) => self.progress > 0.9 && openShop(),
+        },
+      },
+    );
+    // Idle sway.
+    gsap.to(tag, { rotation: 2.5, duration: 2.4, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 3 });
+  }
+
+  tag.addEventListener('click', () => {
+    swing(22);
+    sparkle(price, '#ffc247', 1.1);
+  });
+
+  bell.addEventListener('click', () => ring());
+</script>

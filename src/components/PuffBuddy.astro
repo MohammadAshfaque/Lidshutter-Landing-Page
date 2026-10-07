@@ -1,0 +1,297 @@
+---
+// Lidi: a tiny laptop with a happy face on its screen, wearing a "coming soon" tag.
+// It stays with you as you scroll.
+---
+
+<div class="buddy" data-buddy>
+  <span class="bubble" data-bubble role="status">Coming soon!</span>
+  <button type="button" class="buddy-btn" data-buddy-btn aria-label="LidShutter is coming soon. Click Lidi to hear a sound.">
+    <svg viewBox="0 0 196 170" aria-hidden="true">
+      <defs>
+        <linearGradient id="lidi-screen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff6cc" />
+          <stop offset="1" stop-color="#ffc247" />
+        </linearGradient>
+      </defs>
+
+      <ellipse cx="70" cy="160" rx="50" ry="4" fill="rgb(255 194 71 / 0.22)" />
+
+      <g class="l-all">
+        <!-- Legs and sneakers -->
+        <g class="l-leg l-leg-left">
+          <path class="l-limb" d="M55 126 L 52 148" />
+          <ellipse class="l-shoe" cx="47" cy="151" rx="9" ry="5" />
+        </g>
+        <g class="l-leg l-leg-right">
+          <path class="l-limb" d="M85 126 L 88 148" />
+          <ellipse class="l-shoe" cx="93" cy="151" rx="9" ry="5" />
+        </g>
+
+        <!-- Arms -->
+        <g class="l-arm-left">
+          <path class="l-limb" d="M20 116 L 6 98" />
+          <circle class="l-hand" cx="5" cy="96" r="5.5" />
+        </g>
+        <g class="l-arm-right">
+          <path class="l-limb" d="M120 116 L 132 128" />
+          <circle class="l-hand" cx="133" cy="130" r="5.5" />
+        </g>
+
+        <!-- Keyboard deck -->
+        <rect x="16" y="110" width="108" height="17" rx="6" fill="#3b3b43" stroke="#111" stroke-width="2.5" />
+        <rect x="30" y="115" width="80" height="3.5" rx="1.75" fill="#5a5a64" />
+
+        <!-- Lid with a face on the screen -->
+        <g class="l-lid">
+          <rect x="20" y="26" width="100" height="86" rx="11" fill="#2b2b31" stroke="#111" stroke-width="3" />
+          <rect x="27" y="33" width="86" height="70" rx="7" fill="url(#lidi-screen)" />
+          <circle cx="70" cy="29.5" r="1.5" fill="#666" />
+          <g class="l-eyes">
+            <ellipse cx="55" cy="63" rx="5.5" ry="7.5" fill="#2b1d00" />
+            <ellipse cx="85" cy="63" rx="5.5" ry="7.5" fill="#2b1d00" />
+            <circle cx="57" cy="60" r="1.8" fill="#fff" />
+            <circle cx="87" cy="60" r="1.8" fill="#fff" />
+          </g>
+          <circle cx="44" cy="78" r="5.5" fill="#ff8fb0" opacity="0.75" />
+          <circle cx="96" cy="78" r="5.5" fill="#ff8fb0" opacity="0.75" />
+          <path class="l-mouth" d="M61 79 q 9 9 18 0" />
+        </g>
+
+        <!-- "Coming soon" tag hanging from the lid's corner -->
+        <g class="l-tag">
+          <path d="M116 32 C 126 36, 132 48, 133 65" fill="none" stroke="#2b2b31" stroke-width="1.6" />
+          <path class="l-tag-card" d="M126 62 L 136 50 L 190 50 L 190 86 L 136 86 Z" />
+          <circle cx="134" cy="68" r="2.6" fill="#111" />
+          <text x="163" y="63" text-anchor="middle" class="l-only">coming</text>
+          <text x="163" y="79" text-anchor="middle" class="l-price">soon!</text>
+        </g>
+      </g>
+    </svg>
+  </button>
+</div>
+
+<style>
+  .buddy {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(14px, env(safe-area-inset-bottom));
+    z-index: 45;
+    width: 136px;
+    transform: translateY(140%);
+    pointer-events: none;
+  }
+
+  .buddy-btn {
+    display: block;
+    width: 100%;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.4s var(--spring);
+  }
+
+  .buddy-btn:hover {
+    transform: scale(1.06) rotate(-3deg);
+  }
+
+  .buddy-btn:active {
+    transform: scale(0.92);
+  }
+
+  svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .l-limb {
+    fill: none;
+    stroke: #2b2b31;
+    stroke-width: 5;
+    stroke-linecap: round;
+  }
+
+  .l-hand {
+    fill: #fff;
+    stroke: #111;
+    stroke-width: 2.5;
+  }
+
+  .l-shoe {
+    fill: #fff;
+    stroke: #111;
+    stroke-width: 2.5;
+  }
+
+  .l-mouth {
+    fill: none;
+    stroke: #2b1d00;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .l-tag-card {
+    fill: #fff;
+    stroke: #111;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+  }
+
+  .l-only {
+    font: 700 7px var(--font);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    fill: #7a5200;
+  }
+
+  .l-price {
+    font: 800 14px var(--font-display);
+    letter-spacing: -0.02em;
+    fill: var(--rust);
+  }
+
+  .bubble {
+    position: absolute;
+    right: 78%;
+    top: -10px;
+    padding: 8px 12px;
+    border-radius: 14px 14px 4px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #1a1100;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 10px 24px -10px rgb(0 0 0 / 0.25);
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+    transform-origin: 100% 100%;
+    transition: opacity 0.25s, transform 0.4s var(--spring);
+  }
+
+  .bubble.show {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (max-width: 640px) {
+    .buddy {
+      width: 100px;
+    }
+
+    .bubble {
+      font-size: 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .buddy {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { getState, play } from '../scripts/audio';
+  import { sparkle } from '../scripts/sparkle';
+
+  const buddy = document.querySelector<HTMLElement>('[data-buddy]')!;
+  const btn = buddy.querySelector<HTMLButtonElement>('[data-buddy-btn]')!;
+  const bubble = buddy.querySelector<HTMLElement>('[data-bubble]')!;
+  const svg = btn.querySelector('svg')!;
+  const all = svg.querySelector('.l-all')!;
+  const eyes = svg.querySelector('.l-eyes')!;
+  const lid = svg.querySelector('.l-lid')!;
+  const tag = svg.querySelector('.l-tag')!;
+  const armLeft = svg.querySelector('.l-arm-left')!;
+  const legs = [svg.querySelector('.l-leg-left')!, svg.querySelector('.l-leg-right')!];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let bubbleTimer: number | undefined;
+  function say(text: string, ms = 2600) {
+    bubble.textContent = text;
+    bubble.classList.add('show');
+    clearTimeout(bubbleTimer);
+    bubbleTimer = window.setTimeout(() => bubble.classList.remove('show'), ms);
+  }
+
+  const wave = () =>
+    gsap.fromTo(armLeft, { rotation: 0 }, { rotation: 28, svgOrigin: '20 116', duration: 0.16, yoyo: true, repeat: 5, ease: 'sine.inOut' });
+
+  if (!reduceMotion) {
+    gsap.set(tag, { svgOrigin: '116 32' });
+    gsap.set(eyes, { transformOrigin: '50% 50%' });
+    gsap.set(lid, { svgOrigin: '70 112' });
+
+    // Walk in from the bottom of the screen, wave, and show off the tag.
+    gsap
+      .timeline({ delay: 1.2 })
+      .to(buddy, { y: 0, duration: 0.9, ease: 'back.out(1.6)' })
+      .add(wave(), 0.7)
+      .to(tag, { rotation: 14, duration: 0.25, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 0.8)
+      .call(() => say('Psst… LidShutter is coming soon!'), [], 0.9);
+
+    // Idle life: bob, a swinging tag, blinks, and a little "lid nod" now and then.
+    gsap.to(all, { y: -4, duration: 1.4, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    gsap.to(tag, { rotation: 6, duration: 1.1, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 2.4 });
+    const blink = () => {
+      gsap.to(eyes, { scaleY: 0.1, duration: 0.07, yoyo: true, repeat: 1 });
+      gsap.delayedCall(2.5 + Math.random() * 3, blink);
+    };
+    gsap.delayedCall(3, blink);
+    const nod = () => {
+      gsap.to(lid, { scaleY: 0.86, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut' });
+      gsap.delayedCall(5 + Math.random() * 4, nod);
+    };
+    gsap.delayedCall(6, nod);
+
+    // Leans with your scrolling, and springs back.
+    let lastY = window.scrollY;
+    let lastT = performance.now();
+    const lean = gsap.quickTo(btn, 'rotation', { duration: 0.6, ease: 'elastic.out(1, 0.4)' });
+    let settle: number | undefined;
+    window.addEventListener(
+      'scroll',
+      () => {
+        const now = performance.now();
+        const v = (window.scrollY - lastY) / Math.max(16, now - lastT);
+        lastY = window.scrollY;
+        lastT = now;
+        lean(Math.max(-12, Math.min(12, -v * 6)));
+        clearTimeout(settle);
+        settle = window.setTimeout(() => lean(0), 120);
+      },
+      { passive: true },
+    );
+
+    // A happy dance once you reach the final section.
+    const finale = document.getElementById('pricing');
+    if (finale) {
+      new IntersectionObserver(
+        ([e], io) => {
+          if (!e.isIntersecting) return;
+          io.disconnect();
+          gsap.timeline().to(all, { y: -24, duration: 0.25, ease: 'power2.out' }).to(all, { y: 0, duration: 0.5, ease: 'bounce.out' });
+          wave();
+          say('Coming soon. Your shop awaits!', 3200);
+        },
+        { threshold: 0.4 },
+      ).observe(finale);
+    }
+  } else {
+    buddy.style.transform = 'none';
+  }
+
+  const lines = ['Coming soon!', 'Ka-chunk! Hear that?', 'Almost ready to open!', 'Hehe, that tickles!'];
+  let line = 0;
+  btn.addEventListener('click', () => {
+    play(getState().openSound);
+    say(lines[line++ % lines.length]);
+    sparkle(btn, '#ffc247', 0.9);
+    if (!reduceMotion) {
+      // A happy little hop with dancing feet.
+      gsap.timeline().to(all, { y: -16, duration: 0.18, ease: 'power2.out' }).to(all, { y: 0, duration: 0.45, ease: 'bounce.out' });
+      gsap.fromTo(legs, { rotation: 0 }, { rotation: (i) => (i ? 14 : -14), svgOrigin: (i) => (i ? '85 126' : '55 126'), duration: 0.12, yoyo: true, repeat: 3 });
+      gsap.to(tag, { rotation: 22, duration: 0.15, yoyo: true, repeat: 3, ease: 'sine.inOut' });
+    }
+  });
+</script>

@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import Prose from '../../components/Prose.astro';
+
+const posts = [
+  {
+    href: '/blog/sounds-made-in-code',
+    title: 'How every LidShutter sound is made in code',
+    summary: 'No recordings, no audio files: a look at how the shutters, bells and boings are built from scratch.',
+  },
+];
+---
+
+<Base title="Blog" description="Notes from the LidShutter shop." home={false}>
+  <Prose eyebrow="Blog" title="Notes from the shop">
+    <div class="posts">
+      {
+        posts.map((p) => (
+          <a href={p.href} class="post">
+            <strong>{p.title}</strong>
+            <span>{p.summary}</span>
+            <em>Read the post →</em>
+          </a>
+        ))
+      }
+    </div>
+  </Prose>
+</Base>
+
+<style>
+  .posts {
+    display: grid;
+    gap: 12px;
+  }
+
+  .post {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 22px;
+    border-radius: var(--r-card);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    transition: background-color 0.2s, transform 0.35s var(--spring);
+  }
+
+  .post:hover {
+    background: var(--card-hover);
+    transform: translateY(-2px);
+  }
+
+  .post strong {
+    font-family: var(--font-display);
+    font-size: 21px;
+    color: var(--text);
+  }
+
+  .post span {
+    color: var(--text-2);
+  }
+
+  .post em {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--accent);
+  }
+</style>

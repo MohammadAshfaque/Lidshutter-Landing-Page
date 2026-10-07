@@ -1,0 +1,131 @@
+---
+import Icon from './Icon.astro';
+import PlayButton from './PlayButton.astro';
+
+const steps = [
+  {
+    n: 1,
+    icon: 'Moon',
+    tint: 'lilac',
+    title: 'Close the lid',
+    body: 'A cheerful “shoop, pop, boing!” plays right as the lid shuts.',
+    play: { sound: '@close', label: 'your close sound' },
+  },
+  {
+    n: 2,
+    icon: 'Coffee',
+    tint: 'mint',
+    title: 'Take a break',
+    body: 'Lunch, a meeting, a good night’s sleep. LidShutter waits quietly in your menu bar.',
+  },
+  {
+    n: 3,
+    icon: 'Sunrise',
+    tint: 'gold',
+    title: 'Open it again',
+    body: 'Your shutter rolls up with a clackety ka-chunk and a ding. The shop is open!',
+    play: { sound: '@open', label: 'your open sound' },
+  },
+] as const;
+---
+
+<section class="section how-section" id="how">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow"><Icon name="MousePointerClick" /> How it works</p>
+      <h2 class="h2">Three steps. Zero setup.</h2>
+      <p class="lead">
+        Install it once and forget it’s there, until it makes you smile every time you open your MacBook.
+      </p>
+    </div>
+
+    <ol class="steps">
+      {
+        steps.map((s, i) => (
+          <li class="step card reveal" style={`--delay:${i * 0.08}s`} data-tint={s.tint}>
+            <div class="step-top">
+              <span class="badge" style="--size:48px">
+                <Icon name={s.icon} />
+              </span>
+              <span class="num">Step {s.n}</span>
+            </div>
+            <h3 class="h3">{s.title}</h3>
+            <p class="muted">{s.body}</p>
+            {'play' in s && (
+              <div class="listen">
+                <PlayButton sound={s.play.sound} tint={s.tint} label={s.play.label} size={36} />
+                <span>Listen</span>
+              </div>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  /* The app scene right after this has its own top space */
+  .section.how-section {
+    padding-bottom: clamp(16px, 3vw, 32px);
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    position: relative;
+  }
+
+  .step {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: background-color 0.25s, transform 0.4s var(--spring);
+  }
+
+  .step:hover {
+    background: var(--card-hover);
+    transform: translateY(-3px);
+  }
+
+  .step-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .step p {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  .listen {
+    margin-top: auto;
+    padding-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  @media (max-width: 640px) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

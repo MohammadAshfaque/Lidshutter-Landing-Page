@@ -1,0 +1,73 @@
+---
+// Port of DiceButton in FunStyle.swift: spins and flips through faces when rolled.
+import Glyph from './Glyph.astro';
+import type { Tint } from '../data/sounds';
+
+interface Props {
+  label: string;
+  tint?: Tint;
+  size?: number;
+  [key: `data-${string}`]: string;
+}
+
+const { label, tint = 'gold', size = 30, ...data } = Astro.props;
+---
+
+<button type="button" class="dice-btn" data-tint={tint} data-face="5" aria-label={label} title={label} style={`--size:${size}px`} {...data}>
+  <span class="dice-spin">
+    {[1, 2, 3, 4, 5, 6].map((n) => (
+      <span class={`face face-${n}`}>
+        <Glyph name={`dice-${['one', 'two', 'three', 'four', 'five', 'six'][n - 1]}`} />
+      </span>
+    ))}
+  </span>
+</button>
+
+<style>
+  .dice-btn {
+    width: var(--size);
+    height: var(--size);
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--tint);
+    background: color-mix(in srgb, var(--tint) 16%, transparent);
+    transition: transform 0.3s var(--spring), background-color 0.2s;
+  }
+
+  .dice-btn:hover {
+    background: color-mix(in srgb, var(--tint) 26%, transparent);
+    transform: scale(1.1);
+  }
+
+  .dice-btn:active {
+    transform: scale(0.85);
+  }
+
+  .dice-spin {
+    display: grid;
+    width: 64%;
+    height: 64%;
+    transition: transform 0.6s var(--spring);
+  }
+
+  .face {
+    grid-area: 1 / 1;
+    display: none;
+  }
+
+  .face :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .dice-btn[data-face='1'] .face-1,
+  .dice-btn[data-face='2'] .face-2,
+  .dice-btn[data-face='3'] .face-3,
+  .dice-btn[data-face='4'] .face-4,
+  .dice-btn[data-face='5'] .face-5,
+  .dice-btn[data-face='6'] .face-6 {
+    display: block;
+  }
+</style>

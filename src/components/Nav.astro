@@ -1,0 +1,427 @@
+---
+import AppIcon from './AppIcon.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  home?: boolean;
+}
+
+const { home = true } = Astro.props;
+const base = home ? '' : '/';
+// The page's sections, in order (the hero needs no link).
+const sections = [
+  { id: 'roll', label: 'Feel sounds' },
+  { id: 'how', label: 'How it works' },
+  { id: 'features', label: 'Features' },
+  { id: 'privacy', label: 'Privacy' },
+  { id: 'faq', label: 'FAQ' },
+  { id: 'pricing', label: 'Pricing' },
+];
+const links = sections.map((s) => ({ href: `${base}#${s.id}`, label: s.label }));
+---
+
+<header class="nav" data-nav>
+  <div class="nav-inner">
+    <a href="/" class="brand" aria-label="LidShutter home">
+      <AppIcon size={28} eager />
+      <span>LidShutter</span>
+    </a>
+
+    <nav class="links" aria-label="Main" data-links>
+      <span class="link-pill" aria-hidden="true" data-link-pill></span>
+      {links.map((l) => <a href={l.href} data-spy={l.href.split('#')[1]}>{l.label}</a>)}
+    </nav>
+
+    <div class="actions">
+      {home && (
+        <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false">
+          <span class="st-off"><Icon name="VolumeX" /></span>
+          <span class="st-on"><Icon name="Volume2" /></span>
+          <span class="st-eq eq" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="st-label" data-sound-label>Sound off</span>
+        </button>
+      )}
+      <a href={home ? '#roll' : '/#roll'} class="btn btn-primary btn-sm buy">Try the sounds</a>
+      <button type="button" class="menu-btn" data-menu-btn aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Phone menu -->
+  <nav class="sheet" id="mobile-menu" data-sheet aria-label="Sections">
+    {links.map((l, i) => <a href={l.href} style={`--i:${i}`}>{l.label}</a>)}
+  </nav>
+  {home && <span class="progress" aria-hidden="true" data-progress></span>}
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: 76px;
+    padding-top: 14px;
+  }
+
+  /* A floating rounded bar that firms up once you scroll */
+  .nav-inner {
+    height: 52px;
+    width: calc(100% - var(--gutter) * 2);
+    max-width: 1060px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 8px 0 16px;
+    border-radius: 999px;
+    background: rgb(238 238 241 / 0.8);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06) inset, 0 1px 0 rgb(255 255 255 / 0.7) inset;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: background-color 0.3s, box-shadow 0.3s;
+  }
+
+  .nav.is-scrolled .nav-inner {
+    background: rgb(236 236 239 / 0.9);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.07) inset, 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 10px 34px -14px rgb(0 0 0 / 0.18);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+  }
+
+  .brand img {
+    border-radius: 7px;
+  }
+
+  .links {
+    position: relative;
+    display: flex;
+    gap: 4px;
+  }
+
+  /* Slides under the link for the section you're reading */
+  .link-pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px rgb(0 0 0 / 0.04);
+    opacity: 0;
+    transition: transform 0.45s var(--spring), width 0.45s var(--spring), opacity 0.25s;
+    pointer-events: none;
+  }
+
+  .links a.is-active {
+    color: var(--text);
+  }
+
+  .links a {
+    position: relative;
+    white-space: nowrap;
+    font-size: 14px;
+    color: var(--text-2);
+    padding: 6px 12px;
+    border-radius: 999px;
+    transition: color 0.2s, background-color 0.2s;
+  }
+
+  .links a:hover {
+    color: var(--text);
+    background: rgb(0 0 0 / 0.045);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: 8px;
+  }
+
+  .actions :global(.btn) {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .sound-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px 0 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+    background: rgb(255 255 255 / 0.75);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+    transition: color 0.2s, background-color 0.2s, transform 0.3s var(--spring);
+  }
+
+  .sound-toggle:hover {
+    color: var(--text);
+  }
+
+  .sound-toggle:active {
+    transform: scale(0.94);
+  }
+
+  .sound-toggle :global(svg) {
+    width: 17px;
+    height: 17px;
+  }
+
+  .st-on {
+    display: none;
+  }
+
+  .sound-toggle[aria-pressed='true'] {
+    color: var(--accent);
+    background: rgb(255 194 71 / 0.12);
+    box-shadow: 0 0 0 1px rgb(255 194 71 / 0.25) inset;
+  }
+
+  .sound-toggle[aria-pressed='true'] .st-on {
+    display: block;
+  }
+
+  .st-eq {
+    display: none;
+    width: 17px;
+    justify-content: center;
+  }
+
+  .sound-toggle.is-playing .st-eq {
+    display: flex;
+  }
+
+  .sound-toggle.is-playing .st-on,
+  .sound-toggle.is-playing .st-off {
+    display: none;
+  }
+
+  .progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--light);
+    transform-origin: left;
+    transform: scaleX(var(--p, 0));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .nav.is-scrolled .progress {
+    opacity: 0;
+  }
+
+  .sound-toggle[aria-pressed='true'] .st-off {
+    display: none;
+  }
+
+  .menu-btn {
+    display: none;
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fill);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+  }
+
+  .menu-btn span {
+    position: absolute;
+    left: 13px;
+    right: 13px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--text);
+    transition: transform 0.35s var(--spring), top 0.35s var(--spring);
+  }
+
+  .menu-btn span:first-child {
+    top: 16px;
+  }
+
+  .menu-btn span:last-child {
+    top: 22px;
+  }
+
+  .menu-btn[aria-expanded='true'] span:first-child {
+    top: 19px;
+    transform: rotate(45deg);
+  }
+
+  .menu-btn[aria-expanded='true'] span:last-child {
+    top: 19px;
+    transform: rotate(-45deg);
+  }
+
+  .sheet {
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 72px;
+    display: none;
+    flex-direction: column;
+    padding: 8px;
+    border-radius: 22px;
+    background: rgb(255 255 255 / 0.96);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.07) inset, 0 24px 60px -18px rgb(0 0 0 / 0.25);
+  }
+
+  .sheet a {
+    padding: 13px 16px;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .sheet a:active {
+    background: var(--fill);
+  }
+
+  .sheet.open {
+    display: flex;
+    animation: sheet-in 0.35s var(--spring);
+  }
+
+  .sheet.open a {
+    animation: sheet-item 0.4s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 30ms);
+  }
+
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.97);
+    }
+  }
+
+  @keyframes sheet-item {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  @media (max-width: 1140px) {
+    .links {
+      display: none;
+    }
+
+    .menu-btn {
+      display: block;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .st-label {
+      display: none;
+    }
+
+    .sound-toggle {
+      padding: 0 10px;
+    }
+
+    .brand span {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { subscribe, enableSound, disableSound, getState } from '../scripts/audio';
+
+  const nav = document.querySelector<HTMLElement>('[data-nav]')!;
+  const progress = document.querySelector<HTMLElement>('[data-progress]');
+  // The page height is measured on resize, not on every scroll event.
+  let maxScroll = 1;
+  const measure = () => (maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight));
+  measure();
+  window.addEventListener('resize', measure);
+  window.addEventListener('load', measure);
+  let scrolled = false;
+  const onScroll = () => {
+    const isScrolled = window.scrollY > 8;
+    if (isScrolled !== scrolled) {
+      scrolled = isScrolled;
+      nav.classList.toggle('is-scrolled', isScrolled);
+    }
+    progress?.style.setProperty('--p', String(Math.min(1, window.scrollY / maxScroll)));
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Highlight the link for the section in view, with a pill that slides between links.
+  const pill = document.querySelector<HTMLElement>('[data-link-pill]')!;
+  const spyLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
+  const sections = spyLinks
+    .map((a) => document.getElementById(a.dataset.spy!))
+    .filter((el): el is HTMLElement => !!el);
+
+  function setActive(id: string | null) {
+    const link = spyLinks.find((a) => a.dataset.spy === id);
+    spyLinks.forEach((a) => a.classList.toggle('is-active', a === link));
+    if (!link) {
+      pill.style.opacity = '0';
+      return;
+    }
+    pill.style.opacity = '1';
+    pill.style.width = `${link.offsetWidth}px`;
+    pill.style.transform = `translateX(${link.offsetLeft}px)`;
+  }
+
+  if (sections.length) {
+    const visible = new Map<string, number>();
+    const spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => visible.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0));
+        const best = [...visible.entries()].filter(([, r]) => r > 0).sort((a, b) => b[1] - a[1])[0];
+        setActive(best ? best[0] : null);
+      },
+      { threshold: [0, 0.15, 0.3, 0.5], rootMargin: '-30% 0px -40% 0px' },
+    );
+    sections.forEach((s) => spy.observe(s));
+  }
+
+  // Phone menu
+  const menuBtn = document.querySelector<HTMLButtonElement>('[data-menu-btn]')!;
+  const sheet = document.querySelector<HTMLElement>('[data-sheet]')!;
+  const setSheet = (open: boolean) => {
+    sheet.classList.toggle('open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+  };
+  menuBtn.addEventListener('click', () => setSheet(!sheet.classList.contains('open')));
+  sheet.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a')) setSheet(false);
+  });
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && setSheet(false));
+
+  const toggle = document.querySelector<HTMLButtonElement>('[data-sound-toggle]');
+  const label = document.querySelector<HTMLElement>('[data-sound-label]');
+  if (toggle && label) {
+    toggle.addEventListener('click', () => (getState().soundOn ? disableSound() : enableSound()));
+    subscribe(({ soundOn, nowPlaying }) => {
+      toggle.setAttribute('aria-pressed', String(soundOn));
+      toggle.classList.toggle('is-playing', !!nowPlaying);
+      label.textContent = soundOn ? 'Sound on' : 'Sound off';
+    });
+  }
+</script>

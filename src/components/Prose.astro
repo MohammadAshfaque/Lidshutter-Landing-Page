@@ -1,0 +1,80 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  updated?: string;
+}
+
+const { eyebrow, title, updated } = Astro.props;
+---
+
+<article class="prose container">
+  <p class="eyebrow">{eyebrow}</p>
+  <h1 class="h2">{title}</h1>
+  {updated && <p class="updated">Last updated {updated}</p>}
+  <div class="body">
+    <slot />
+  </div>
+</article>
+
+<style>
+  .prose {
+    max-width: calc(720px + var(--gutter) * 2);
+    padding-block: clamp(64px, 10vw, 120px);
+  }
+
+  .updated {
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  .body {
+    margin-top: 40px;
+    color: var(--text-2);
+  }
+
+  .body :global(h2) {
+    margin: 40px 0 10px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .body :global(p),
+  .body :global(li) {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .body :global(ul) {
+    padding-left: 20px;
+  }
+
+  .body :global(li + li) {
+    margin-top: 6px;
+  }
+
+  .body :global(strong) {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .body :global(a) {
+    color: var(--accent);
+  }
+
+  .body :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .body :global(.callout) {
+    padding: 20px 22px;
+    border-radius: var(--r-card);
+    background: rgb(255 194 71 / 0.08);
+    box-shadow: 0 0 0 1px rgb(255 194 71 / 0.2) inset;
+    color: var(--text);
+  }
+</style>
