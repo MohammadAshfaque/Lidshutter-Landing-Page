@@ -3,19 +3,19 @@
 
 import { pricing, tierFor } from '../data/site';
 
-const live = process.env.POLAR_ENV === 'live';
+const live = process.env.POLAR_ENV?.trim().toLowerCase() === 'live';
 
 /** Polar's sandbox until you set POLAR_ENV=live. */
 // (POLAR_API_BASE only exists so the checks can run against a stand-in server.)
 export const polarBase = process.env.POLAR_API_BASE ?? (live ? 'https://api.polar.sh' : 'https://sandbox-api.polar.sh');
 /** An Organization Access Token (Polar → Settings → Developers). */
-export const polarToken = process.env.POLAR_ACCESS_TOKEN;
+export const polarToken = process.env.POLAR_ACCESS_TOKEN?.trim() || undefined;
 
 /**
  * The ONE product everything is sold through (POLAR_PRODUCT_ID). Its license-key benefit allows 1 Mac; the price
  * and, for Mac packs, the number of Macs are set by this site for each sale (see api/checkout.ts and lib/fulfil.ts).
  */
-export const productId = process.env.POLAR_PRODUCT_ID;
+export const productId = process.env.POLAR_PRODUCT_ID?.trim() || undefined;
 
 export interface Plan {
   macs: number;

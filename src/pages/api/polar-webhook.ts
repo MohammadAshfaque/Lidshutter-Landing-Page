@@ -15,7 +15,7 @@ import { launchUnits, verify } from '../../lib/webhook';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-  const secret = process.env.POLAR_WEBHOOK_SECRET;
+  const secret = process.env.POLAR_WEBHOOK_SECRET?.trim();
   if (!secret) return new Response('Webhook secret not set', { status: 503 });
 
   const raw = await request.text();
