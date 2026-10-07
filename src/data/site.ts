@@ -61,8 +61,8 @@ export const site = {
   description:
     'LidShutter is a tiny Mac menu bar app that plays a rolling shop shutter when you open your MacBook lid, and a cheerful pop when you close it. 22 original sounds. Works offline after you activate it.',
   price: formatUsd(currentTier.usd),
-  // Your notarized .dmg (upload it somewhere public, such as a GitHub release or your own storage).
-  downloadUrl: '#',
+  // The newest notarized DMG. The release script (Tools/release.sh in the app project) puts it here for you.
+  downloadUrl: '/LidShutter.dmg',
   supportEmail: 'support@lidshutter.com',
   requirements: 'macOS 13 Ventura or later',
 };

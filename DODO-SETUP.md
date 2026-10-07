@@ -55,11 +55,14 @@ If you change a price in `src/data/site.ts`, change the matching Dodo product to
 4. Do one real purchase yourself (and refund it) before announcing.
 
 ## Shipping the app (outside the Mac App Store)
-License keys and an outside payment link aren't allowed in the Mac App Store, so sell it directly:
-1. Join the Apple Developer Program, make a **Developer ID Application** certificate, and sign the app with it (Xcode → Signing: your team + "Developer ID Application").
-2. Product → Archive → Distribute App → **Developer ID** → Upload (this notarizes it), then export.
-3. Put it in a DMG (`hdiutil create` or `create-dmg`), notarize the DMG (`xcrun notarytool submit LidShutter.dmg --keychain-profile "<profile>" --wait`), then `xcrun stapler staple LidShutter.dmg`.
-4. Check: `spctl -a -vv -t install LidShutter.dmg` says "accepted, source=Notarized Developer ID".
+License keys and an outside payment link aren't allowed in the Mac App Store, so sell it directly.
+Everything (build, sign, notarize, DMG, update list, upload) is one command in the app project:
+
+```bash
+sh Tools/release.sh 1.0 "First release."
+```
+
+Set it up once with your Apple Developer ID. The steps are in the app project's `RELEASING.md`. Customers get updates inside LidShutter: the same command, with a new version number, is how you ship every update.
 
 ## What the app talks to
-Only Dodo's license endpoints: once on activation, once on deactivation, and at most once a week to confirm the key wasn't refunded. Offline never locks a paid Mac. The app has a checker for its license logic: `sh Tools/LicenseTests/run.sh` (in the app folder).
+Dodo's license endpoints (once on activation, once on deactivation, and at most once a week to confirm the key wasn't refunded) and `lidshutter.com/appcast.xml` (about once a day, to see whether a newer version exists). Offline never locks a paid Mac. The app has a checker for its license logic: `sh Tools/LicenseTests/run.sh` (in the app folder).
