@@ -1,0 +1,84 @@
+---
+import Base from '../../layouts/Base.astro';
+import Prose from '../../components/Prose.astro';
+import { article, breadcrumbs, howTo, organization } from '../../lib/seo';
+import { site } from '../../data/site';
+import { totalSoundCount } from '../../data/sounds';
+
+const path = '/blog/play-a-sound-when-you-open-your-macbook';
+const headline = 'How to play a sound when you open your MacBook lid';
+const summary = 'macOS makes no sound when you lift the lid. Here is what it does and does not do, and how to add a lid-open sound to your Mac.';
+
+const steps = [
+  { name: 'Download and install LidShutter', text: 'Download LidShutter from lidshutter.com, open the file, and drag LidShutter into your Applications folder.' },
+  { name: 'Activate your license key', text: 'Open LidShutter, open the dashboard from the menu bar icon, choose License, paste your key and press Activate.' },
+  { name: 'Choose your opening sound', text: 'In the menu bar panel, pick a sound under “When I open”, or press the dice for a random one.' },
+  { name: 'Choose your closing sound', text: 'Pick a goodbye sound under “When I close”. On MacBooks with a lid angle sensor it starts while the lid is still moving.' },
+  { name: 'Set the volume', text: 'Use the volume slider, which goes up to 200%, and open and close your lid to hear it.' },
+];
+---
+
+<Base
+  title="Play a Sound When You Open Your MacBook Lid"
+  description={summary}
+  home={false}
+  schema={[
+    organization,
+    article(headline, summary, path),
+    howTo(headline, summary, steps),
+    breadcrumbs([
+      { name: 'LidShutter', path: '/' },
+      { name: 'Blog', path: '/blog' },
+      { name: headline, path },
+    ]),
+  ]}
+>
+  <Prose eyebrow="Blog" title={headline}>
+    <p>
+      <strong>Short answer:</strong> your MacBook does not make a sound when you open the lid, and macOS has no setting to
+      turn one on. The only sound your Mac plays on its own is the startup chime, and that is a different thing. To hear a
+      sound every time you lift the lid, you need a small app such as <a href="/">LidShutter</a>.
+    </p>
+
+    <h2>What macOS does and does not do</h2>
+    <p>
+      When you lift the lid of a MacBook that is asleep, it wakes up quietly. Nothing plays, and there is no switch in
+      System Settings for a “lid open” sound.
+    </p>
+    <p>
+      The startup chime is the sound some Macs play when they turn on from fully off. It is not tied to the lid, it does not
+      play when a Mac wakes from sleep, and on many newer Macs it is off unless you turn it on. If your Mac offers it, the
+      setting is in System Settings, under Sound.
+    </p>
+
+    <h2>Your options</h2>
+    <ul>
+      <li>
+        <strong>An app made for it.</strong> LidShutter sits in the menu bar and plays a sound when you open the lid and
+        another when you close it. It has {totalSoundCount} sounds, and you pick them.
+      </li>
+      <li>
+        <strong>A script.</strong> If you are comfortable with scripting, tools such as Hammerspoon can run your own code
+        when your Mac wakes. It takes setup, and a wake is not always the same as a lid opening.
+      </li>
+    </ul>
+
+    <h2>How to set it up with LidShutter</h2>
+    <ol>
+      {steps.map((s) => <li><strong>{s.name}.</strong> {s.text}</li>)}
+    </ol>
+
+    <h2>What it costs, and what it does not do</h2>
+    <p>
+      LidShutter is a one-time purchase with no subscription. Launch pricing starts at $1.99 for one Mac, and one key can
+      cover 2 to 10 Macs. It works offline after you activate it, needs {site.requirements}, and has no account and no
+      analytics. See the <a href="/#pricing">pricing</a> and the <a href="/#faq">questions people ask</a>.
+    </p>
+
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/blog/macbook-lid-angle-sound">How the close sound plays before the lid shuts</a></li>
+      <li><a href="/blog/sounds-made-in-code">How every LidShutter sound is made in code</a></li>
+    </ul>
+  </Prose>
+</Base>

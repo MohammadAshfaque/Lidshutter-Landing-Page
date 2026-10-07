@@ -1,0 +1,13 @@
+{
+  "name": "LidShutter",
+  "short_name": "LidShutter",
+  "description": "A Mac menu bar app that plays a sound when you open or close your MacBook lid.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/icons/app-icon-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/icons/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

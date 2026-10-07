@@ -15,8 +15,8 @@ interface Props {
   schema?: object[];
 }
 
-const { title, description = site.description, home = true, noindex = false, schema = [] } = Astro.props;
-const fullTitle = title ? `${title} · LidShutter` : `LidShutter — ${site.tagline}`;
+const { title, description = site.metaDescription, home = true, noindex = false, schema = [] } = Astro.props;
+const fullTitle = title ? `${title} · LidShutter` : site.homeTitle;
 const canonical = new URL(Astro.url.pathname, site.url).href;
 ---
 
@@ -42,6 +42,7 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
     <meta name="theme-color" content="#ffffff" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="LidShutter" />

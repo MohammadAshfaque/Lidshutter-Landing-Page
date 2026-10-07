@@ -7,6 +7,8 @@ const pages = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
   { path: '/changelog', changefreq: 'monthly', priority: '0.7' },
   { path: '/blog', changefreq: 'monthly', priority: '0.6' },
+  { path: '/blog/play-a-sound-when-you-open-your-macbook', changefreq: 'monthly', priority: '0.8' },
+  { path: '/blog/macbook-lid-angle-sound', changefreq: 'monthly', priority: '0.7' },
   { path: '/blog/sounds-made-in-code', changefreq: 'yearly', priority: '0.6' },
   { path: '/support', changefreq: 'yearly', priority: '0.4' },
   { path: '/privacy', changefreq: 'yearly', priority: '0.3' },

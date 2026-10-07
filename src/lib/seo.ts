@@ -98,5 +98,13 @@ export const article = (headline: string, description: string, path: string) => 
   inLanguage: 'en',
 });
 
+export const howTo = (name: string, description: string, steps: { name: string; text: string }[]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name,
+  description,
+  step: steps.map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.name, text: s.text })),
+});
+
 /** Safe to place inside a script tag. */
 export const jsonLd = (data: object | object[]) => JSON.stringify(data).replace(/</g, '\\u003c');

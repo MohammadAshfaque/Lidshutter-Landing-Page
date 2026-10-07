@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import Prose from '../../components/Prose.astro';
+import { article, breadcrumbs, organization } from '../../lib/seo';
+
+const path = '/blog/macbook-lid-angle-sound';
+const headline = 'How LidShutter plays the close sound before the lid shuts';
+const summary = 'How a MacBook’s lid angle sensor lets a sound start while the lid is still moving, and what happens on Macs without one.';
+---
+
+<Base
+  title="MacBook Lid Angle Sound, Explained"
+  description={summary}
+  home={false}
+  schema={[
+    organization,
+    article(headline, summary, path),
+    breadcrumbs([
+      { name: 'LidShutter', path: '/' },
+      { name: 'Blog', path: '/blog' },
+      { name: headline, path },
+    ]),
+  ]}
+>
+  <Prose eyebrow="Blog" title={headline}>
+    <p>
+      A goodbye sound that plays after the lid has already shut feels late. LidShutter tries to play it while the lid is
+      still closing, so the sound lands right as the lid meets the base.
+    </p>
+
+    <h2>Two kinds of signal</h2>
+    <ul>
+      <li>
+        <strong>Lid and sleep events.</strong> macOS already tells apps when the lid moves and when the Mac goes to sleep or
+        wakes up. LidShutter listens for these, and that is how it knows the lid was opened.
+      </li>
+      <li>
+        <strong>The lid angle.</strong> MacBooks with a lid angle sensor report how far the lid is open. LidShutter reads
+        that angle, so it can see the lid closing and start the close sound before the lid shuts.
+      </li>
+    </ul>
+
+    <h2>What this means for you</h2>
+    <p>
+      On a MacBook with the sensor, the close sound starts while the lid is moving. On a MacBook without it, LidShutter
+      relies on the events macOS sends. Either way, you pick the sound under “When I close” in the menu bar.
+    </p>
+
+    <h2>Not every close needs a sound</h2>
+    <p>
+      If you close the lid and open it again straight away, a sound can be annoying. LidShutter can play only after the lid
+      has been closed for a real break, and you can pause it with one switch in the menu bar when you are in a meeting.
+    </p>
+
+    <h2>Battery and privacy</h2>
+    <p>
+      LidShutter sleeps until macOS reports that your lid moved, and it never keeps your Mac awake, so battery use is very
+      low. The lid angle is used only on your Mac, and nothing about how you use it leaves your Mac.
+    </p>
+
+    <h2>Related</h2>
+    <ul>
+      <li><a href="/blog/play-a-sound-when-you-open-your-macbook">How to play a sound when you open your MacBook lid</a></li>
+      <li><a href="/">LidShutter for Mac</a></li>
+    </ul>
+  </Prose>
+</Base>

@@ -30,6 +30,8 @@ ${facts()}
 - [Home, features and pricing](${link('/')}): what LidShutter does, the sounds, and how to buy it
 - [FAQ](${link('/#faq')}): licenses, offline use, privacy, supported Macs
 - [Changelog](${link('/changelog')}): what is new in each version
+- [How to play a sound when you open your MacBook lid](${link('/blog/play-a-sound-when-you-open-your-macbook')}): what macOS does and doesn't do, and how to add a lid sound
+- [How the close sound plays before the lid shuts](${link('/blog/macbook-lid-angle-sound')}): lid angle detection explained
 - [How every sound is made in code](${link('/blog/sounds-made-in-code')}): how the sounds are built
 - [Privacy policy](${link('/privacy')}): exactly what the app and the website collect
 - [Support](${link('/support')}): contact and feedback

@@ -58,6 +58,10 @@ export const site = {
   name: 'LidShutter',
   url: 'https://lidshutter.com',
   tagline: 'Open your Mac like you open your shop.',
+  // What search results show: the words people actually search for, kept short enough not to be cut off.
+  homeTitle: 'LidShutter – Play a Sound When You Open Your MacBook',
+  metaDescription:
+    'LidShutter is a Mac menu bar app that plays a sound when you open or close your MacBook lid. 22 original sounds, works offline, one-time price.',
   description:
     'LidShutter is a tiny Mac menu bar app that plays a rolling shop shutter when you open your MacBook lid, and a cheerful pop when you close it. 22 original sounds. Works offline after you activate it.',
   price: formatUsd(currentTier.usd),

@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+---
+
+<Base title="Page not found" description="That page isn't here. Head back to the LidShutter homepage." home={false} noindex>
+  <Prose eyebrow="404" title="That page isn’t here.">
+    <p>The page you were looking for has moved or never existed.</p>
+    <ul>
+      <li><a href="/">Back to the LidShutter homepage</a></li>
+      <li><a href="/blog">Read the blog</a></li>
+      <li><a href="/support">Contact support</a></li>
+    </ul>
+  </Prose>
+</Base>
