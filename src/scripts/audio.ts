@@ -96,13 +96,50 @@ const boostFor = (volume: number) => Math.round(Math.max(1, Math.min(volume, 2))
 
 function ensureContext(): AudioContext {
   if (!ctx) {
-    ctx = new AudioContext();
+    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    ctx = new Ctor();
     master = ctx.createGain();
     master.gain.value = Math.min(state.volume, 1);
     master.connect(ctx.destination);
+    // A phone can stop the audio again (a call, another app, a locked screen). Next tap wakes it.
+    ctx.onstatechange = () => {
+      if (ctx && ctx.state !== 'running') armUnlock();
+    };
   }
-  if (ctx.state === 'suspended') void ctx.resume();
+  // iPhones report "interrupted" (not just "suspended") when something else took the audio.
+  if (ctx.state !== 'running') void ctx.resume();
   return ctx;
+}
+
+/**
+ * iPhones mute web audio while the silent switch is on, unless the page plays "media". iOS 17 and later let
+ * us say so directly; older iPhones need a silent audio element playing, started from a tap.
+ */
+let silentElement: HTMLAudioElement | null = null;
+const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1);
+function playOnSilentSwitch() {
+  try {
+    const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
+    if (session) session.type = 'playback';
+  } catch {
+    /* not supported */
+  }
+  if (!isIOS()) return;
+  if (!silentElement) {
+    const rate = 8000;
+    const bytes = new Uint8Array(44 + rate / 10);
+    const view = new DataView(bytes.buffer);
+    const text = (at: number, value: string) => [...value].forEach((c, i) => view.setUint8(at + i, c.charCodeAt(0)));
+    text(0, 'RIFF'); view.setUint32(4, 36 + rate / 10, true); text(8, 'WAVE'); text(12, 'fmt ');
+    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, rate, true); view.setUint32(28, rate, true); view.setUint16(32, 1, true); view.setUint16(34, 8, true);
+    text(36, 'data'); view.setUint32(40, rate / 10, true);
+    bytes.fill(128, 44); // 8-bit silence
+    silentElement = new Audio(URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' })));
+    silentElement.loop = true;
+    silentElement.setAttribute('playsinline', '');
+  }
+  void silentElement.play().catch(() => {});
 }
 
 function buffer(id: SoundId): AudioBuffer {
@@ -139,7 +176,12 @@ function unlocked() {
   unlockEvents.forEach((e) => document.removeEventListener(e, unlock, true));
   unlockWaiters.splice(0).forEach((fn) => fn());
 }
+/** Listens for the next tap or key press to wake the audio (adding the same listener twice does nothing). */
+function armUnlock() {
+  unlockEvents.forEach((e) => document.addEventListener(e, unlock, true));
+}
 function unlock() {
+  playOnSilentSwitch();
   const audio = ensureContext();
   if (audio.state === 'running') return unlocked();
   // A silent blip, started inside the gesture, is what wakes audio on iOS Safari.
@@ -149,7 +191,7 @@ function unlock() {
   blip.start();
   audio.resume().then(() => audio.state === 'running' && unlocked(), () => {});
 }
-unlockEvents.forEach((e) => document.addEventListener(e, unlock, true));
+armUnlock();
 
 /** Whether a sound could be heard right now. */
 export function audioUnlocked() {
@@ -181,7 +223,10 @@ const LEAD = 0.04;
  * so animations can start in sync with it.
  */
 export function play(id: SoundId, { userInitiated = true } = {}): number {
-  if (userInitiated) enableSound();
+  if (userInitiated) {
+    playOnSilentSwitch();
+    enableSound();
+  }
   if (!state.soundOn) return 0;
   // An automatic play before the browser allows audio would sit queued and come out late, so skip it.
   if (!userInitiated && !audioUnlocked()) return 0;
