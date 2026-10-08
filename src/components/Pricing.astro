@@ -1,6 +1,6 @@
 ---
 // A tiny shop that opens as you scroll to it, with the price on a swinging tag.
-import { site, pricing, currentTier, formatUsd } from '../data/site';
+import { site, pricing, currentTier, formatUsd, regularUsd } from '../data/site';
 import Glyph from './Glyph.astro';
 import FaceField from './FaceField.astro';
 
@@ -9,6 +9,9 @@ import FaceField from './FaceField.astro';
 const slots = Array.from({ length: pricing.slotsPerTier }, (_, i) => i < currentTier.taken);
 const left = currentTier.left;
 const showPacks = currentTier.launchOver || pricing.showPacksDuringLaunch;
+
+// "How many Macs?": one Mac first, then the packs.
+const options = [{ macs: 1, usd: regularUsd }, ...pricing.packs];
 
 const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
 ---
@@ -92,10 +95,35 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
       </div>
     </div>
 
+    <!-- How many Macs? One key covers them all. -->
+    <div class="pick" data-pick data-packs hidden={!showPacks}>
+      <h3 id="pick-title">How many Macs?</h3>
+      <p class="pick-lead">One key activates on all of them. The more Macs, the less each one costs.</p>
+      <ul class="pick-grid" role="radiogroup" aria-labelledby="pick-title">
+        {
+          options.map((o) => (
+            <li>
+              <button type="button" class="opt" role="radio" aria-checked={o.macs === 1 ? 'true' : 'false'} data-macs={o.macs}>
+                <span class="opt-check" aria-hidden="true">✓</span>
+                <span class="opt-macs">{o.macs === 1 ? '1 Mac' : `${o.macs} Macs`}</span>
+                <b class="opt-price" data-usd={o.usd}>{formatUsd(o.usd)}</b>
+                {o.macs === 1 ? (
+                  <span class="opt-per">one license</span>
+                ) : (
+                  <span class="opt-per" data-usd={o.usd} data-per-mac={o.macs}>{formatUsd(o.usd / o.macs)} per Mac</span>
+                )}
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="pick-summary" data-pick-summary role="status" aria-live="polite">1 Mac · one license</p>
+    </div>
+
     <!-- Buy -->
     <div class="buy">
       <a class="buy-btn" href={`/api/checkout?macs=1&expect=${currentTier.usd.toFixed(2)}`} data-buy-link data-macs="1">
-        <span>Buy LidShutter</span>
+        <span data-buy-label>Buy LidShutter</span>
         <b data-buy-price>{site.price}</b>
       </a>
       {
@@ -112,24 +140,6 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
       <p class="buy-alert" data-buy-alert role="status" hidden></p>
     </div>
 
-    <!-- More Macs: one key for 2 to 10 Macs -->
-    <div class="packs" data-packs hidden={!showPacks}>
-      <h3>More than one Mac?</h3>
-      <p class="packs-lead">One key that activates on up to 10 Macs. The more Macs, the less each one costs.</p>
-      <ul class="pack-grid">
-        {
-          pricing.packs.map((p) => (
-            <li>
-              <a class="pack" href={`/api/checkout?macs=${p.macs}&expect=${p.usd.toFixed(2)}`} data-buy-link data-macs={p.macs}>
-                <span class="pack-macs">{p.macs} Macs</span>
-                <b class="pack-price" data-usd={p.usd}>{formatUsd(p.usd)}</b>
-                <span class="pack-per" data-usd={p.usd} data-per-mac={p.macs}>{formatUsd(p.usd / p.macs)} per Mac</span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
     {
       pricing.launch && (
         <p class="packs-hint" data-packs-hint hidden={showPacks}>
@@ -241,31 +251,31 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
   }
 
   .buy [hidden],
-  .packs[hidden],
+  .pick[hidden],
   .packs-hint[hidden] {
     display: none;
   }
 
-  /* More Macs */
-  .packs {
-    margin: 44px auto 0;
+  /* How many Macs? */
+  .pick {
+    margin: 34px auto 0;
     max-width: 880px;
     text-align: center;
   }
 
-  .packs h3 {
+  .pick h3 {
     margin: 0;
     font-family: var(--font-display);
     font-size: clamp(22px, 3vw, 28px);
     letter-spacing: -0.02em;
   }
 
-  .packs-lead {
-    margin: 8px 0 22px;
+  .pick-lead {
+    margin: 8px 0 20px;
     color: var(--text-2);
   }
 
-  .pack-grid {
+  .pick-grid {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -274,39 +284,72 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
     gap: 12px;
   }
 
-  /* 9 packs: a lone last card spans the row on phones, and three even rows from tablets up. */
-  .pack-grid > :last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-
   @media (min-width: 520px) {
-    .pack-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    .pack-grid > :last-child:nth-child(odd) {
-      grid-column: auto;
+    .pick-grid {
+      grid-template-columns: repeat(5, 1fr);
     }
   }
 
-  .pack {
+  .opt {
+    position: relative;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    padding: 16px 12px;
+    padding: 16px 10px 14px;
+    border: 0;
     border-radius: var(--r-tile);
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
     background: var(--card);
     box-shadow: 0 0 0 1px var(--stroke) inset;
-    transition: transform 0.35s var(--spring), background-color 0.2s, box-shadow 0.2s;
+    transition: transform 0.3s var(--spring), background-color 0.2s, box-shadow 0.2s;
   }
 
-  .pack:hover {
+  .opt:hover {
     background: var(--card-hover);
-    transform: translateY(-3px);
-    box-shadow: 0 0 0 2px var(--gold) inset, var(--shadow);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 1px var(--gold) inset;
   }
 
-  .pack-macs {
+  .opt:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  /* The one you picked: gold ring, a tick, a warm fill */
+  .opt[aria-checked='true'] {
+    background: rgb(255 194 71 / 0.16);
+    box-shadow: 0 0 0 3px var(--gold) inset, 0 10px 26px -12px rgb(255 160 40 / 0.7);
+    transform: translateY(-2px);
+  }
+
+  .opt-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--on-gold);
+    background: var(--light);
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 0.2s, transform 0.3s var(--spring);
+  }
+
+  .opt[aria-checked='true'] .opt-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .opt-macs {
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -314,16 +357,23 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
     color: var(--accent);
   }
 
-  .pack-price {
+  .opt-price {
     font-family: var(--font-display);
-    font-size: 26px;
+    font-size: 24px;
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
   }
 
-  .pack-per {
+  .opt-per {
     font-size: 12.5px;
     color: var(--text-3);
+  }
+
+  .pick-summary {
+    margin: 18px 0 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
   }
 
   .packs-hint {

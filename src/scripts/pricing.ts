@@ -29,6 +29,10 @@ function compute(country: string | null, sold: number): PricingState {
 
 const $$ = <T extends HTMLElement>(sel: string) => [...document.querySelectorAll<T>(sel)];
 
+/** How many Macs the visitor has picked. */
+let selectedMacs = 1;
+const usdFor = (macs: number) => (macs === 1 ? state.usd : pricing.packs.find((p) => p.macs === macs)?.usd ?? state.usd);
+
 function render() {
   const tier = tierFor(state.sold);
   const price = (usd: number) => localPrice(usd, state.country, locale);
@@ -43,7 +47,6 @@ function render() {
 
   // The price tag and its label.
   $$('[data-price-label]').forEach((el) => (el.textContent = tier.launchOver ? 'Per Mac' : 'Launch price'));
-  $$('[data-buy-price]').forEach((el) => (el.textContent = state.price.text));
 
   // The price steps: current one lit, earlier ones struck through.
   $$('[data-step]').forEach((el) => {
@@ -78,11 +81,23 @@ function render() {
   $$('[data-packs]').forEach((el) => (el.hidden = !showPacks));
   $$('[data-packs-hint]').forEach((el) => (el.hidden = showPacks));
 
-  // Buy links carry the price the visitor sees; checkout refuses to charge a different one.
+  // The Mac count picker: the chosen one is marked, and the buy button says what you are buying.
+  const macs = selectedMacs;
+  const total = usdFor(macs);
+  $$('[data-pick] .opt').forEach((el) => el.setAttribute('aria-checked', String(Number(el.dataset.macs) === macs)));
+  $$('[data-pick-summary]').forEach((el) => {
+    el.textContent =
+      macs === 1
+        ? `1 Mac · ${price(total).text}`
+        : `${macs} Macs · one key · ${price(total).text} (${price(total / macs).text} per Mac)`;
+  });
+  $$('[data-buy-label]').forEach((el) => (el.textContent = macs === 1 ? 'Buy LidShutter' : `Buy for ${macs} Macs`));
+  $$('[data-buy-price]').forEach((el) => (el.textContent = price(total).text));
+
+  // The buy link carries the price the visitor sees; checkout refuses to charge a different one.
   $$<HTMLAnchorElement>('[data-buy-link]').forEach((a) => {
-    const macs = Number(a.dataset.macs ?? 1);
-    const usd = macs === 1 ? state.usd : pricing.packs.find((p) => p.macs === macs)?.usd ?? 0;
-    a.href = `/api/checkout?macs=${macs}&expect=${usd.toFixed(2)}`;
+    a.dataset.macs = String(macs);
+    a.href = `/api/checkout?macs=${macs}&expect=${total.toFixed(2)}`;
   });
 
   // A note when prices are converted.
@@ -125,6 +140,13 @@ async function json<T>(url: string, tries = 3): Promise<T | null> {
   }
   return null;
 }
+
+document.addEventListener('click', (event) => {
+  const option = (event.target as HTMLElement).closest<HTMLElement>('[data-pick] .opt');
+  if (!option) return;
+  selectedMacs = Number(option.dataset.macs) || 1;
+  render();
+});
 
 async function start() {
   render();
