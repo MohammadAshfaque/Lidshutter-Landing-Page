@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Prose from '../../components/Prose.astro';
-import { article, breadcrumbs, howTo, organization } from '../../lib/seo';
+import { article, breadcrumbs, organization } from '../../lib/seo';
 import { formatUsd, regularUsd, site } from '../../data/site';
 import { totalSoundCount } from '../../data/sounds';
 
@@ -25,7 +25,6 @@ const steps = [
   schema={[
     organization,
     article(headline, summary, path),
-    howTo(headline, summary, steps),
     breadcrumbs([
       { name: 'LidShutter', path: '/' },
       { name: 'Blog', path: '/blog' },
@@ -33,11 +32,11 @@ const steps = [
     ]),
   ]}
 >
-  <Prose eyebrow="Blog" title={headline}>
+  <Prose eyebrow="Blog" title={headline} updated="October 8, 2026">
     <p>
-      <strong>Short answer:</strong> your MacBook does not make a sound when you open the lid, and macOS has no setting to
-      turn one on. The only sound your Mac plays on its own is the startup chime, and that is a different thing. To hear a
-      sound every time you lift the lid, you need a small app such as <a href="/">LidShutter</a>.
+      <strong>Short answer:</strong> your MacBook does not make a sound when you lift the lid, and macOS has no built-in
+      “lid open” sound option. The startup sound is a different thing: it plays when the Mac starts up, not when it wakes
+      from sleep. To hear a sound every time you lift the lid, you need a small app such as <a href="/">LidShutter</a>.
     </p>
 
     <h2>What macOS does and does not do</h2>
@@ -46,9 +45,10 @@ const steps = [
       System Settings for a “lid open” sound.
     </p>
     <p>
-      The startup chime is the sound some Macs play when they turn on from fully off. It is not tied to the lid, it does not
-      play when a Mac wakes from sleep, and on many newer Macs it is off unless you turn it on. If your Mac offers it, the
-      setting is in System Settings, under Sound.
+      The startup sound is the chime a Mac plays when it starts up. It is not tied to the lid, and it does not play when a
+      Mac wakes from sleep. On macOS 13 (Ventura) or later you can turn it on or off in System Settings, under Sound, with
+      “Play sound on startup” (Apple’s <a href="https://support.apple.com/HT211996" rel="noopener">support page</a> shows
+      the steps).
     </p>
 
     <h2>Your options</h2>
@@ -58,8 +58,9 @@ const steps = [
         another when you close it. It has {totalSoundCount} sounds, and you pick them.
       </li>
       <li>
-        <strong>A script.</strong> If you are comfortable with scripting, tools such as Hammerspoon can run your own code
-        when your Mac wakes. It takes setup, and a wake is not always the same as a lid opening.
+        <strong>A script.</strong> If you are comfortable with scripting, a tool such as
+        <a href="https://www.hammerspoon.org/docs/hs.caffeinate.watcher.html" rel="noopener">Hammerspoon</a> can run your own
+        code when your Mac wakes. It takes setup, and a wake is not always the same as a lid opening.
       </li>
     </ul>
 
@@ -73,6 +74,10 @@ const steps = [
       LidShutter is a one-time purchase with no subscription. One Mac costs {formatUsd(regularUsd)}, and one key can
       cover 2 to 10 Macs. It works offline after you activate it, needs {site.requirements}, and has no account and no
       analytics. See the <a href="/#pricing">pricing</a> and the <a href="/#faq">questions people ask</a>.
+    </p>
+
+    <p>
+      Spotted a mistake? Email <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> and we will correct it.
     </p>
 
     <h2>Related</h2>

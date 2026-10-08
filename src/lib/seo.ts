@@ -19,7 +19,6 @@ export const organization = {
   logo: absolute('/icons/app-icon-512.png'),
   email: site.supportEmail,
   sameAs: [site.makerUrl],
-  founder: { '@type': 'Person', name: `@${site.makerHandle}`, url: site.makerUrl, sameAs: [site.makerUrl] },
   contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: site.supportEmail, availableLanguage: 'English' },
 };
 
@@ -98,14 +97,6 @@ export const article = (headline: string, description: string, path: string) => 
   author: { '@id': id('organization') },
   publisher: { '@id': id('organization') },
   inLanguage: 'en',
-});
-
-export const howTo = (name: string, description: string, steps: { name: string; text: string }[]) => ({
-  '@context': 'https://schema.org',
-  '@type': 'HowTo',
-  name,
-  description,
-  step: steps.map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.name, text: s.text })),
 });
 
 /** Safe to place inside a script tag. */

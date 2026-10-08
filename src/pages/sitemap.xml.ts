@@ -4,23 +4,23 @@ import type { APIRoute } from 'astro';
 import { site } from '../data/site';
 
 const pages = [
-  { path: '/', changefreq: 'weekly', priority: '1.0' },
-  { path: '/changelog', changefreq: 'monthly', priority: '0.7' },
-  { path: '/blog', changefreq: 'monthly', priority: '0.6' },
-  { path: '/blog/play-a-sound-when-you-open-your-macbook', changefreq: 'monthly', priority: '0.8' },
-  { path: '/blog/macbook-lid-angle-sound', changefreq: 'monthly', priority: '0.7' },
-  { path: '/blog/sounds-made-in-code', changefreq: 'yearly', priority: '0.6' },
-  { path: '/support', changefreq: 'yearly', priority: '0.4' },
-  { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
-  { path: '/terms', changefreq: 'yearly', priority: '0.3' },
-  { path: '/refund', changefreq: 'yearly', priority: '0.4' },
+  { path: '/' },
+  { path: '/changelog' },
+  { path: '/blog' },
+  { path: '/blog/play-a-sound-when-you-open-your-macbook' },
+  { path: '/blog/macbook-lid-angle-sound' },
+  { path: '/blog/sounds-made-in-code' },
+  { path: '/support' },
+  { path: '/privacy' },
+  { path: '/terms' },
+  { path: '/refund' },
 ];
 
 export const GET: APIRoute = () => {
   const urls = pages
     .map(
       (p) =>
-        `  <url>\n    <loc>${new URL(p.path, site.url).href}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`,
+        `  <url>\n    <loc>${new URL(p.path, site.url).href}</loc>\n  </url>`,
     )
     .join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;

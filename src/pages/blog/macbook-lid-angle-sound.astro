@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Prose from '../../components/Prose.astro';
 import { article, breadcrumbs, organization } from '../../lib/seo';
+import { site } from '../../data/site';
 
 const path = '/blog/macbook-lid-angle-sound';
 const headline = 'How LidShutter plays the close sound before the lid shuts';
@@ -22,7 +23,7 @@ const summary = 'How a MacBook’s lid angle sensor lets a sound start while the
     ]),
   ]}
 >
-  <Prose eyebrow="Blog" title={headline}>
+  <Prose eyebrow="Blog" title={headline} updated="October 8, 2026">
     <p>
       A goodbye sound that plays after the lid has already shut feels late. LidShutter tries to play it while the lid is
       still closing, so the sound lands right as the lid meets the base.
@@ -56,6 +57,10 @@ const summary = 'How a MacBook’s lid angle sensor lets a sound start while the
     <p>
       LidShutter sleeps until macOS reports that your lid moved, and it never keeps your Mac awake, so battery use is very
       low. The lid angle is used only on your Mac, and nothing about how you use it leaves your Mac.
+    </p>
+
+    <p>
+      Spotted a mistake? Email <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> and we will correct it.
     </p>
 
     <h2>Related</h2>
