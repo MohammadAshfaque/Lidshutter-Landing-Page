@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Prose from '../../components/Prose.astro';
 import { article, breadcrumbs, howTo, organization } from '../../lib/seo';
-import { site } from '../../data/site';
+import { formatUsd, regularUsd, site } from '../../data/site';
 import { totalSoundCount } from '../../data/sounds';
 
 const path = '/blog/play-a-sound-when-you-open-your-macbook';
@@ -70,7 +70,7 @@ const steps = [
 
     <h2>What it costs, and what it does not do</h2>
     <p>
-      LidShutter is a one-time purchase with no subscription. Launch pricing starts at $1.99 for one Mac, and one key can
+      LidShutter is a one-time purchase with no subscription. One Mac costs {formatUsd(regularUsd)}, and one key can
       cover 2 to 10 Macs. It works offline after you activate it, needs {site.requirements}, and has no account and no
       analytics. See the <a href="/#pricing">pricing</a> and the <a href="/#faq">questions people ask</a>.
     </p>

@@ -2,7 +2,7 @@
 // and what people ask about it. Everything here comes from the same data as the page, so nothing can drift.
 
 import { faqs } from '../data/faq';
-import { pricing, site } from '../data/site';
+import { formatUsd, lowestUsd, pricing, site } from '../data/site';
 import { totalSoundCount } from '../data/sounds';
 
 const id = (name: string) => `${site.url}/#${name}`;
@@ -59,12 +59,12 @@ export const softwareApplication = {
   offers: {
     '@type': 'AggregateOffer',
     priceCurrency: 'USD',
-    lowPrice: pricing.tiers[0].toFixed(2),
+    lowPrice: lowestUsd.toFixed(2),
     highPrice: pricing.packs[pricing.packs.length - 1].usd.toFixed(2),
     offerCount: pricing.packs.length + 1,
     availability: 'https://schema.org/InStock',
     url: `${site.url}/#pricing`,
-    description: 'One-time purchase, no subscription. Launch pricing from $1.99 for one Mac; packs for 2 to 10 Macs.',
+    description: `One-time purchase, no subscription. ${formatUsd(lowestUsd)} for one Mac; packs for 2 to 10 Macs.`,
   },
 };
 

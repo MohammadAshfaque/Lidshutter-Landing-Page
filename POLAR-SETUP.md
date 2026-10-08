@@ -30,7 +30,7 @@ It allows 1 Mac. When someone buys a Mac pack, our server raises that key's limi
 ## 3. One product
 Products → **New Product**. Name it "LidShutter". Pricing: **One-time**, **Fixed price**, USD only (leave "Add Currency", seat and unit pricing alone). Price: **$4.99**. Attach the license-key benefit from step 2. Save, open the product and copy its **Product ID** into `POLAR_PRODUCT_ID`.
 
-**You never create more products and never change a price in Polar.** For every sale the site tells Polar the exact price (the launch prices $1.99, $2.99, $3.99, then $4.99, or the Mac pack price) and how many Macs the key covers, and counts the launch sales through the webhook. The $4.99 on the product is only a fallback. The prices live in `src/data/site.ts`.
+**You never create more products and never change a price in Polar.** For every sale the site tells Polar the exact price (one Mac $4.99, or the Mac pack price; launch pricing is switched off with `launch: false` in `src/data/site.ts`) and how many Macs the key covers, and counts the launch sales through the webhook. The $4.99 on the product is only a fallback. The prices live in `src/data/site.ts`.
 
 ### Prices in local currencies
 Because the site sets each sale's price in US dollars, buyers are charged in USD and their bank converts it. The landing page still shows an approximate local price. (Fixed local-currency prices would need a separate Polar product per price, which this setup avoids on purpose.)

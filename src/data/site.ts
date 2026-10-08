@@ -5,7 +5,11 @@
 // ---------------------------------------------------------------------------
 
 export const pricing = {
-  // LAUNCH PRICING (one Mac): each price has a few slots. When they're all taken, the next
+  // false: one Mac costs the last price below ($4.99) from day one, and the Mac packs show right away.
+  // true: launch pricing. Each price below has a few slots; when they're all taken the next price applies.
+  launch: false,
+
+  // LAUNCH PRICING (one Mac), used only when `launch` is true: each price has a few slots. When they're all taken, the next
   // price applies, up to the last one. The count of sold slots comes from /api/sold (the
   // Polar webhook keeps it); `sold` below is only the fallback until that answers.
   tiers: [1.99, 2.99, 3.99, 4.99],
@@ -33,8 +37,15 @@ export const pricing = {
 
 export const launchSlots = pricing.tiers.length * pricing.slotsPerTier;
 
+/** What one Mac costs once launch pricing is over (or when there is none). */
+export const regularUsd = pricing.tiers[pricing.tiers.length - 1];
+
+/** The lowest price anyone can pay for one Mac. */
+export const lowestUsd = pricing.launch ? pricing.tiers[0] : regularUsd;
+
 /** Where a given number of sold slots puts the launch price. */
 export function tierFor(sold: number) {
+  if (!pricing.launch) return { index: pricing.tiers.length - 1, usd: regularUsd, nextUsd: null, taken: 0, left: 0, launchOver: true };
   const clamped = Math.max(0, Math.floor(sold));
   const over = clamped >= launchSlots;
   const index = Math.min(Math.floor(clamped / pricing.slotsPerTier), pricing.tiers.length - 1);

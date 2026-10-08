@@ -37,29 +37,37 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
               <span class="string" aria-hidden="true"></span>
               <span class="card">
                 <span class="hole" aria-hidden="true"></span>
-                <span class="only" data-price-label>Launch price</span>
+                <span class="only" data-price-label>{pricing.launch && !currentTier.launchOver ? 'Launch price' : 'Per Mac'}</span>
                 <span class="price" data-price>{site.price}</span>
               </span>
             </button>
 
-            <!-- The counter: launch slots and the price ladder -->
+            <!-- The counter: launch slots and the price ladder (only while there is launch pricing) -->
             <div class="counter">
-              <div class="slots" data-slots>
-                <span class="slot-row" aria-hidden="true">
-                  {slots.map((taken, i) => <i class:list={[{ taken }]} style={`--i:${i}`} />)}
-                </span>
-                <span class="slot-text" data-slot-text>
-                  <b>{left} of {pricing.slotsPerTier}</b> left at <span data-usd={currentTier.usd}>{site.price}</span>
-                  {currentTier.nextUsd && <> · then <span data-usd={currentTier.nextUsd}>{formatUsd(currentTier.nextUsd)}</span></>}
-                </span>
-              </div>
-              <ol class="ladder" aria-label="Launch price steps">
-                {
-                  pricing.tiers.map((t, i) => (
-                    <li data-step={i} data-usd={t} class:list={[{ now: i === currentTier.index, past: i < currentTier.index }]}>{formatUsd(t)}</li>
-                  ))
-                }
-              </ol>
+              {
+                pricing.launch ? (
+                  <>
+                    <div class="slots" data-slots>
+                      <span class="slot-row" aria-hidden="true">
+                        {slots.map((taken, i) => <i class:list={[{ taken }]} style={`--i:${i}`} />)}
+                      </span>
+                      <span class="slot-text" data-slot-text>
+                        <b>{left} of {pricing.slotsPerTier}</b> left at <span data-usd={currentTier.usd}>{site.price}</span>
+                        {currentTier.nextUsd && <> · then <span data-usd={currentTier.nextUsd}>{formatUsd(currentTier.nextUsd)}</span></>}
+                      </span>
+                    </div>
+                    <ol class="ladder" aria-label="Launch price steps">
+                      {pricing.tiers.map((t, i) => (
+                        <li data-step={i} data-usd={t} class:list={[{ now: i === currentTier.index, past: i < currentTier.index }]}>{formatUsd(t)}</li>
+                      ))}
+                    </ol>
+                  </>
+                ) : (
+                  <div class="slots" data-slots>
+                    <span class="slot-text" data-slot-text><b>One-time payment</b> · no subscription</span>
+                  </div>
+                )
+              }
             </div>
             <button type="button" class="bell" data-bell aria-label="Ring the shop bell">
               <svg viewBox="0 0 80 56" aria-hidden="true">
@@ -90,10 +98,14 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
         <span>Buy LidShutter</span>
         <b data-buy-price>{site.price}</b>
       </a>
-      <p class="buy-meta">
-        <span class="chip" data-launch-chip>Launch pricing</span>
-        <span data-launch-note>Launch pricing: {left} of {pricing.slotsPerTier} left at {site.price}{currentTier.nextUsd ? `, then ${formatUsd(currentTier.nextUsd)}` : ''}.</span>
-      </p>
+      {
+        pricing.launch && (
+          <p class="buy-meta">
+            <span class="chip" data-launch-chip>Launch pricing</span>
+            <span data-launch-note>Launch pricing: {left} of {pricing.slotsPerTier} left at {site.price}{currentTier.nextUsd ? `, then ${formatUsd(currentTier.nextUsd)}` : ''}.</span>
+          </p>
+        )
+      }
       <p class="buy-fine">One key activates one Mac. Pay once, no subscription. <a href="/refund">7-day refund.</a></p>
       <p class="buy-fine">After you pay, wait a few seconds on the next page: your license key appears there with the Mac app download. Open the app and paste the key.</p>
       <p class="buy-fine" data-region-note hidden></p>
@@ -118,9 +130,13 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
         }
       </ul>
     </div>
-    <p class="packs-hint" data-packs-hint hidden={showPacks}>
-      Need it on 2 to 10 Macs? Multi-Mac packs open when launch pricing ends.
-    </p>
+    {
+      pricing.launch && (
+        <p class="packs-hint" data-packs-hint hidden={showPacks}>
+          Need it on 2 to 10 Macs? Multi-Mac packs open when launch pricing ends.
+        </p>
+      )
+    }
 
     <!-- What the one payment gets you -->
     <div class="perks">

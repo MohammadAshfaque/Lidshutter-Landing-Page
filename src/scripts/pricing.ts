@@ -55,7 +55,9 @@ function render() {
   // Slots: lit as they sell.
   $$('.slot-row i').forEach((el, i) => el.classList.toggle('taken', i < tier.taken || tier.launchOver));
   $$('[data-slot-text]').forEach((el) => {
-    if (tier.launchOver) {
+    if (!pricing.launch) {
+      el.innerHTML = '<b>One-time payment</b> · no subscription';
+    } else if (tier.launchOver) {
       el.innerHTML = `<b>Launch pricing has ended</b> · ${state.price.text} per Mac`;
     } else if (tier.nextUsd) {
       el.innerHTML = `<b>${tier.left} of ${pricing.slotsPerTier}</b> left at ${price(tier.usd).text} · then ${price(tier.nextUsd).text}`;
@@ -127,6 +129,7 @@ async function json<T>(url: string, tries = 3): Promise<T | null> {
 async function start() {
   render();
   showCheckoutMessage();
+  if (!pricing.launch) return; // one price, nothing to look up
   const sold = await json<{ sold: number | null }>('/api/sold');
   Object.assign(state, compute(null, typeof sold?.sold === 'number' ? sold.sold : pricing.sold));
   render();
