@@ -78,6 +78,9 @@ export const site = {
   // The newest notarized DMG. The release script (Tools/release.sh in the app project) puts it here for you.
   downloadUrl: '/LidShutter.dmg',
   supportEmail: 'support@lidshutter.com',
+  // The person who makes LidShutter, shown in the footer and in the search-engine data.
+  makerHandle: 'ashfaque_dev',
+  makerUrl: 'https://x.com/ashfaque_dev',
   // Where buyers sign in to see their license key again. Polar → Settings shows your organization slug:
   // the address is https://polar.sh/<your-slug>/portal
   portalUrl: 'https://polar.sh/lidshutter/portal',

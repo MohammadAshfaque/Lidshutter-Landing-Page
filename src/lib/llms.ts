@@ -18,6 +18,7 @@ const facts = () => `- What it is: a paid macOS menu bar app that plays a sound 
 - No trial: the app stays locked until a license key is activated (needs internet once; then it works offline).
 - Privacy: the app has no account and no analytics. It only contacts the license service to activate, deactivate and re-check a key, and lidshutter.com about once a day to look for a new version.
 - Distribution: sold directly from lidshutter.com as a notarized download (not on the Mac App Store). Payments and license keys are handled by Polar.
+- Maker: built by @${site.makerHandle} on X (${site.makerUrl})
 - Support: ${site.supportEmail}`;
 
 export const llmsTxt = () => `# ${site.name}

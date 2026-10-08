@@ -87,7 +87,9 @@ const assistants = [
 
     <div class="bottom">
       <p>© {year} LidShutter. Mac and MacBook are trademarks of Apple Inc.</p>
-      <p>Made for people who like their Mac to say hello.</p>
+      <p>
+        Made by <a class="maker" href={site.makerUrl} target="_blank" rel="noopener me">@{site.makerHandle}</a> on X. Made for people who like their Mac to say hello.
+      </p>
     </div>
   </div>
 </footer>
@@ -243,6 +245,20 @@ const assistants = [
 
   .bottom p {
     margin: 0;
+  }
+
+  .bottom .maker {
+    font-weight: 600;
+    color: var(--text-2);
+    text-decoration: underline;
+    text-decoration-color: var(--stroke-strong);
+    text-underline-offset: 3px;
+    transition: color 0.2s, text-decoration-color 0.2s;
+  }
+
+  .bottom .maker:hover {
+    color: var(--accent);
+    text-decoration-color: currentColor;
   }
 
   @media (max-width: 760px) {

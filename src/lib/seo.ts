@@ -18,6 +18,8 @@ export const organization = {
   url: site.url,
   logo: absolute('/icons/app-icon-512.png'),
   email: site.supportEmail,
+  sameAs: [site.makerUrl],
+  founder: { '@type': 'Person', name: `@${site.makerHandle}`, url: site.makerUrl, sameAs: [site.makerUrl] },
   contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: site.supportEmail, availableLanguage: 'English' },
 };
 
