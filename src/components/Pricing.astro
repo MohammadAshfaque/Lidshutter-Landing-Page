@@ -134,6 +134,10 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
           </p>
         )
       }
+      <p class="buy-compat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5V15H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M2 17.5h20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>For <strong>MacBook Air &amp; Pro</strong> · <strong>macOS 13</strong> or later</span>
+      </p>
       <p class="buy-fine">One key activates one Mac. Pay once, no subscription. <a href="/refund">7-day refund.</a></p>
       <p class="buy-fine">After you pay, wait a few seconds on the next page: your license key appears there with the Mac app download. Open the app and paste the key.</p>
       <p class="buy-fine" data-region-note hidden></p>
@@ -232,6 +236,40 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
     text-transform: uppercase;
     color: var(--on-gold);
     background: rgb(255 194 71 / 0.35);
+  }
+
+  .buy-compat {
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 14px auto 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    color: var(--text-2);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--stroke) inset;
+  }
+
+  .buy-compat svg {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+  }
+
+  @media (max-width: 380px) {
+    .buy-compat {
+      font-size: 13px;
+      padding: 7px 12px;
+    }
+  }
+
+  .buy-compat strong {
+    font-weight: 650;
+    color: var(--text);
   }
 
   .buy-fine {
