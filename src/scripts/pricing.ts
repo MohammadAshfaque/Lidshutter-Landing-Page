@@ -142,6 +142,15 @@ async function json<T>(url: string, tries = 3): Promise<T | null> {
 }
 
 document.addEventListener('click', (event) => {
+  const buyLink = (event.target as HTMLElement).closest<HTMLAnchorElement>('[data-buy-link]');
+  if (buyLink) {
+    const attr = window.minilytics?.attribution?.();
+    if (attr?.ml_visitor_id && !buyLink.href.includes('ml_visitor_id')) {
+      const sep = buyLink.href.includes('?') ? '&' : '?';
+      buyLink.href += `${sep}ml_visitor_id=${encodeURIComponent(attr.ml_visitor_id)}&ml_session_id=${encodeURIComponent(attr.ml_session_id ?? '')}`;
+    }
+  }
+
   const option = (event.target as HTMLElement).closest<HTMLElement>('[data-pick] .opt');
   if (!option) return;
   selectedMacs = Number(option.dataset.macs) || 1;

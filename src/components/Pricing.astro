@@ -103,7 +103,15 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
         {
           options.map((o) => (
             <li>
-              <button type="button" class="opt" role="radio" aria-checked={o.macs === 1 ? 'true' : 'false'} data-macs={o.macs}>
+              <button
+                type="button"
+                class="opt"
+                role="radio"
+                aria-checked={o.macs === 1 ? 'true' : 'false'}
+                data-macs={o.macs}
+                data-ml-goal="pricing_cta"
+                data-ml-goal-plan={o.macs === 1 ? '1_mac' : `${o.macs}_macs`}
+              >
                 <span class="opt-check" aria-hidden="true">✓</span>
                 <span class="opt-macs">{o.macs === 1 ? '1 Mac' : `${o.macs} Macs`}</span>
                 <b class="opt-price" data-usd={o.usd}>{formatUsd(o.usd)}</b>
@@ -122,7 +130,13 @@ const jars = ['gold', 'pink', 'mint', 'coral', 'lilac', 'gold', 'mint', 'pink'];
 
     <!-- Buy -->
     <div class="buy">
-      <a class="buy-btn" href={`/api/checkout?macs=1&expect=${currentTier.usd.toFixed(2)}`} data-buy-link data-macs="1">
+      <a
+        class="buy-btn"
+        href={`/api/checkout?macs=1&expect=${currentTier.usd.toFixed(2)}`}
+        data-buy-link
+        data-macs="1"
+        data-ml-goal="checkout_click"
+      >
         <span data-buy-label>Buy LidShutter</span>
         <b data-buy-price>{site.price}</b>
       </a>

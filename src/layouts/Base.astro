@@ -61,6 +61,9 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
     <meta name="twitter:image" content={ogImage} />
     {schema.map((item) => <script type="application/ld+json" set:html={jsonLd(item)} />)}
 
+    <!-- Minilytics -->
+    <script is:inline defer data-website-id="012z6o300l410z35" src="https://minilytics.mohammadashfaque18.workers.dev/js/script.js"></script>
+
     {import.meta.env.PROD && (
       <>
         <!-- Google tag (gtag.js) -->

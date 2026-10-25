@@ -41,7 +41,7 @@ const links = sections.map((s) => ({ href: `${base}#${s.id}`, label: s.label }))
           <span class="st-label" data-sound-label>Sound off</span>
         </button>
       )}
-      <a href={home ? '#roll' : '/#roll'} class="btn btn-primary btn-sm buy">Try the sounds</a>
+      <a href={home ? '#roll' : '/#roll'} class="btn btn-primary btn-sm buy" data-ml-goal="try_sounds_click">Try the sounds</a>
       <button type="button" class="menu-btn" data-menu-btn aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu">
         <span></span><span></span>
       </button>

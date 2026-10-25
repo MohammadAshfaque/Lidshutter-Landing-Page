@@ -17,11 +17,14 @@ export const prerender = false;
 const back = (reason: string, origin: string) =>
   new Response(null, { status: 303, headers: { Location: `${origin}/?checkout=${reason}#pricing` } });
 
-export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress, cookies }) => {
   const origin = import.meta.env.PROD ? site.url : url.origin;
   const macs = Number(url.searchParams.get('macs') ?? 1);
   const expect = Number(url.searchParams.get('expect'));
   if (!Number.isInteger(macs) || macs < 1 || macs > 10) return back('invalid', origin);
+
+  const mlVisitorId = cookies?.get('ml_vid')?.value || url.searchParams.get('ml_visitor_id') || '';
+  const mlSessionId = cookies?.get('ml_sid')?.value || url.searchParams.get('ml_session_id') || '';
 
   let sold = 0;
   try {
@@ -58,7 +61,13 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
         success_url: `${origin}/thanks?checkout_id={CHECKOUT_ID}`,
         return_url: `${origin}/#pricing`,
         ...(ip ? { customer_ip_address: ip } : {}),
-        metadata: { macs: String(plan.macs), plan: plan.kind, price_usd: plan.usd.toFixed(2) },
+        metadata: {
+          macs: String(plan.macs),
+          plan: plan.kind,
+          price_usd: plan.usd.toFixed(2),
+          ml_visitor_id: mlVisitorId,
+          ml_session_id: mlSessionId,
+        },
       }),
     });
     const body = (await res.json().catch(() => ({}))) as { url?: string | null };

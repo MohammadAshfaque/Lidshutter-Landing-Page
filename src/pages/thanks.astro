@@ -31,7 +31,7 @@ import { site } from '../data/site';
     <ol class="steps">
       <li>
         <strong>Download LidShutter</strong> and drag it to your Applications folder.
-        <a class="dl" href={site.downloadUrl}>Download for Mac</a>
+        <a class="dl" href={site.downloadUrl} data-ml-goal="download_mac_app">Download for Mac</a>
       </li>
       <li>Open it, then click the <strong>menu bar icon</strong> and choose <strong>Open Dashboard → License</strong>.</li>
       <li>Paste your key and press <strong>Activate</strong>. Your lid sounds start right away.</li>
@@ -115,8 +115,6 @@ import { site } from '../data/site';
 
   if (checkout) {
     load();
-    // Don't leave the checkout address sitting in the address bar and browser history.
-    history.replaceState(null, '', location.pathname);
   } else {
     giveUp();
   }
