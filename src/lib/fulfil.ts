@@ -12,6 +12,7 @@ export interface CheckoutInfo {
   createdAt?: string;
   macs: number;
   plan?: string;
+  visitorId?: string;
 }
 
 /** Reads a checkout from Polar, including the macs/plan our checkout stored in it. Null if Polar can't find it. */
@@ -27,6 +28,7 @@ export async function readCheckout(id: string): Promise<CheckoutInfo | null | 'e
     createdAt: c.created_at,
     macs: Number.isInteger(macs) && macs >= 1 && macs <= 10 ? macs : 1,
     plan: typeof c.metadata?.plan === 'string' ? c.metadata.plan : undefined,
+    visitorId: typeof c.metadata?.ml_visitor_id === 'string' ? c.metadata.ml_visitor_id : undefined,
   };
 }
 

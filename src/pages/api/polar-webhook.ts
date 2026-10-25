@@ -35,9 +35,10 @@ export const POST: APIRoute = async ({ request }) => {
       // order doesn't carry them.
       let macs = Number(order.metadata?.macs);
       let plan = typeof order.metadata?.plan === 'string' ? order.metadata.plan : undefined;
+      let visitorId = typeof order.metadata?.ml_visitor_id === 'string' ? order.metadata.ml_visitor_id : undefined;
       let createdAt: string | undefined;
       let customerId: string | undefined = order.customer_id ?? order.customer?.id;
-      if ((!macs || !plan) && order.checkout_id) {
+      if ((!macs || !plan || !visitorId) && order.checkout_id) {
         const checkout = await readCheckout(order.checkout_id);
         if (checkout === 'error') throw new Error('Could not read the checkout');
         if (checkout) {
@@ -45,6 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
           plan = checkout.plan;
           createdAt = checkout.createdAt;
           customerId ??= checkout.customerId;
+          visitorId ??= checkout.visitorId;
         }
       }
       macs = Number.isInteger(macs) && macs >= 1 && macs <= 10 ? macs : 1;
@@ -52,10 +54,35 @@ export const POST: APIRoute = async ({ request }) => {
       // Free orders (a 100% discount code, a giveaway) never use up a launch slot.
       const paid = [order.net_amount, order.total_amount, order.amount].find((v) => typeof v === 'number');
       const units = paid === 0 ? 0 : launchUnits({ plan });
-      if (units > 0) {
-        // A repeated delivery of the same order must not count twice.
-        const orderId = order.id ?? request.headers.get('webhook-id');
-        if (await firstTime(`lidshutter:order:${orderId}`, 30 * 24 * 3600)) await addToNumber(SOLD_KEY, units);
+      const orderId = order.id ?? request.headers.get('webhook-id');
+      const isFirst = orderId ? await firstTime(`lidshutter:order:${orderId}`, 30 * 24 * 3600) : true;
+
+      if (units > 0 && isFirst) {
+        await addToNumber(SOLD_KEY, units);
+      }
+
+      if (isFirst && typeof paid === 'number' && paid > 0) {
+        const minilyticsKey = process.env.MINILYTICS_API_KEY || 'ml_264p025r216b4i1s25650g1k0h6c223g';
+        const amountUsd = paid > 100 ? paid / 100 : paid;
+        const email = order.customer?.email ?? order.customer_email ?? order.user?.email ?? undefined;
+        try {
+          await fetch('https://minilytics.mohammadashfaque18.workers.dev/api/v1/payments', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${minilyticsKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              transaction_id: orderId,
+              amount: Number(amountUsd.toFixed(2)),
+              currency: 'USD',
+              ...(visitorId ? { visitor_id: visitorId } : {}),
+              ...(email ? { email } : {}),
+            }),
+          });
+        } catch (err) {
+          console.error('Failed to report payment to Minilytics', err);
+        }
       }
 
       if (macs > 1 && customerId) {
