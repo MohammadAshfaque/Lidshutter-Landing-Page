@@ -65,8 +65,10 @@ export const GET: APIRoute = async ({ url, request, clientAddress, cookies }) =>
           macs: String(plan.macs),
           plan: plan.kind,
           price_usd: plan.usd.toFixed(2),
-          ml_visitor_id: mlVisitorId,
-          ml_session_id: mlSessionId,
+          // Polar rejects empty metadata values, so the analytics IDs go in only when there are some
+          // (no cookie yet, an ad blocker...), or the whole checkout fails.
+          ...(mlVisitorId ? { ml_visitor_id: mlVisitorId.slice(0, 500) } : {}),
+          ...(mlSessionId ? { ml_session_id: mlSessionId.slice(0, 500) } : {}),
         },
       }),
     });
